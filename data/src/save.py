@@ -18,6 +18,9 @@ class player(pyg.sprite.Sprite):
 
         self.rect = Rect(0,0,*self.size)
 
+        self.image = pyg.Surface(self.size,pyg.SRCALPHA)
+        self.image.fill((255,0,0,0))
+
     def save(self) -> dict:
         d = {}
         for key in self.__dict__:

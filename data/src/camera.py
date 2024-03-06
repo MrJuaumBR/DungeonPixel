@@ -36,15 +36,15 @@ class CameraGroup(pyg.sprite.Group):
     def zoom_keyboard_control(self):
         # More Zoom
         if (pme.key_pressed(K_PLUS) or pme.key_pressed(K_i)) or (pme.key_pressed(K_KP_PLUS) or pme.key_pressed(K_PAGEUP)):
-            self.zoom_scale += 0.05
-            if self.zoom_scale > 1.55:
-                self.zoom_scale = 1.55
+            self.zoom += 0.05
+            if self.zoom > 1.55:
+                self.zoom = 1.55
         elif (pme.key_pressed(K_MINUS) or pme.key_pressed(K_o)) or (pme.key_pressed(K_KP_MINUS) or pme.key_pressed(K_PAGEDOWN)):
-            self.zoom_scale -= 0.05
-            if self.zoom_scale < 0.95:
-                self.zoom_scale = 0.95
+            self.zoom -= 0.05
+            if self.zoom < 0.95:
+                self.zoom = 0.95
         elif (pme.key_pressed(K_EQUALS) or pme.key_pressed(K_KP_EQUALS)):
-            self.zoom_scale = 1
+            self.zoom = 1
 
     def update(self):
         pass
@@ -71,7 +71,7 @@ class CameraGroup(pyg.sprite.Group):
 
 
          # Scale the internal surface based on the zoom scale
-        scaled_surf = pyg.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)
+        scaled_surf = pyg.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom)
         scaled_rect = scaled_surf.get_rect(center=(self.half_w, self.half_h))
 
         # Blit the scaled surface onto the display surface

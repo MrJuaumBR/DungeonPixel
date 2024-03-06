@@ -1,0 +1,14 @@
+/__pycache__/
+*.vscode
+
+# Databases
+*.pydb
+*.db
+*.pyb
+*.pyd
+*.data
+*.pydata
+
+*.log
+
+/project-data/

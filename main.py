@@ -2,6 +2,7 @@ from data.config import *
 from data.screens.play import *
 from data.screens.settings import *
 from enum import Enum
+import time
 
 class GameMode(Enum):
     INVALID = 0
@@ -14,6 +15,7 @@ class GameMode(Enum):
 def main():    
     game_mode = GameMode.MAIN_MENU.value
     is_running = True
+    saves =  0
 
     while is_running:
         for ev in pme.get_events():
@@ -66,6 +68,7 @@ def main():
                 return pre_loaded_saves
             saves = PreLoadSaves(saves)
                     
+            pme.screen.fill(COLOR_BLACK)
             
             # Screen Title
             pme.draw_text(32*GAME_SCREEN_RATIO[0],32*GAME_SCREEN_RATIO[1],'Save Select', FONT_ANDALIA52, COLOR_WHITE)
@@ -111,9 +114,18 @@ def main():
                 if len(saves) > 0:            
                     game_mode = GameMode.PLAYING.value
         elif game_mode & GameMode.CHARACTER_CREATION.value:
-            pass
+            if len(saves) < GAME_MAX_SAVES:
+                if create_save():
+                    time.sleep(1.0/10.0) #@TODO: Cheap hack
+                    game_mode = GameMode.LOAD_CHARACTER.value
+            saves = db.get_all(table_name='saves')
+            saves = PreLoadSaves(saves)            
         elif game_mode & GameMode.PLAYING.value:            
-            pass
+            if len(saves) > 0:            
+                save:Save = saves[SaveIndex_InList]
+
+            from data.screens.game import game
+            game(save)
         elif game_mode & GameMode.SETTINGS.value:
             cfg = settings()
             # Returned From Settings
@@ -129,6 +141,7 @@ def main():
             assert(0, "Unreachable code")
 
         pme.update()
+        GAME_CLOCK.tick(GAME_FPS)
 
     pme.quit()
 

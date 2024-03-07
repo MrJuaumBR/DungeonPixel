@@ -9,6 +9,8 @@ def settings():
     Select_ScreenSizeIndex = CONFIG['SCREEN_SIZE'] or 0
     Select_FPSIndex = CONFIG['FPS'] or 0
     CheckBx_SHOW_FPS = CONFIG['SHOW_FPS'] or False
+
+    pme.screen.fill(COLOR_BLACK)
     
     # Screen Title
     pme.draw_text(32*GAME_SCREEN_RATIO[0],32*GAME_SCREEN_RATIO[1],'Settings', FONT_ANDALIA52, COLOR_WHITE)
@@ -30,8 +32,5 @@ def settings():
     CheckBx_SHOW_FPS = pme.draw_checkbox(64*GAME_SCREEN_RATIO[0],416*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL18,'Show Fps',CheckBx_SHOW_FPS,[(35,35,35),(100,190,125),(200,200,200)])
        
     ShowFPS()
-    pme.update()
-    pme.screen.fill(COLOR_BLACK)
-    GAME_CLOCK.tick(GAME_FPS)
-    
+
     return Slider_VolumePercentage,Select_ScreenSizeIndex, Select_FPSIndex, CheckBx_SHOW_FPS

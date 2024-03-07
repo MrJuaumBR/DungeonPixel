@@ -1,5 +1,6 @@
 from ..config import *
 from ..src.save import *
+import time
 
 def play():
     pass
@@ -100,34 +101,35 @@ def play_select_character():#@TODO: Delete function?
     GAME_CLOCK.tick(GAME_FPS)
 
 def create_save():
-    run = True
+    result = False
 
     DifficultyIndex = 0
     DifficultyList = ['Easy','Normal','Hard']
 
     SavesList = db.get_all(table_name='saves')
 
-    while run:
-        pme.draw_text(32*GAME_SCREEN_RATIO[0],32*GAME_SCREEN_RATIO[1],'Create New Save', FONT_ANDALIA52, COLOR_WHITE)
+    pme.screen.fill(COLOR_BLACK)
 
-        # Difficulty
-        pme.draw_text(64*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1],f'Difficulty: {DifficultyList[DifficultyIndex]}', FONT_DOGICAPIXEL28, COLOR_WHITE)
-        DifficultyIndex = pme.draw_select(128*GAME_SCREEN_RATIO[0],192*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],DifficultyList,DifficultyIndex)
+    pme.draw_text(32*GAME_SCREEN_RATIO[0],32*GAME_SCREEN_RATIO[1],'Create New Save', FONT_ANDALIA52, COLOR_WHITE)
 
-        if pme.draw_button(64*GAME_SCREEN_RATIO[0],550*GAME_SCREEN_RATIO[1],'Create', FONT_DOGICAPIXEL28, COLOR_LIME, COLOR_BLACK):
-            # Create Save
-            s = Save(len(SavesList),DifficultyIndex)
-            s.save()
-            run = False
+    # Difficulty
+    pme.draw_text(64*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1],f'Difficulty: {DifficultyList[DifficultyIndex]}', FONT_DOGICAPIXEL28, COLOR_WHITE)
+    DifficultyIndex = pme.draw_select(128*GAME_SCREEN_RATIO[0],192*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],DifficultyList,DifficultyIndex)
 
-        for ev in pme.get_events():
-            if ev.type == QUIT:
-                pme.quit()
-            elif ev.type == KEYDOWN:
-                if ev.key == K_ESCAPE:
-                    run = False
+    if pme.draw_button(64*GAME_SCREEN_RATIO[0],550*GAME_SCREEN_RATIO[1],'Create', FONT_DOGICAPIXEL28, COLOR_LIME, COLOR_BLACK):
+        # Create Save
+        s = Save(len(SavesList),DifficultyIndex)
+        s.save()
+        result = True
+    """
+    for ev in pme.get_events():
+        if ev.type == QUIT:
+            pme.quit()
+        elif ev.type == KEYDOWN:
+            if ev.key == K_ESCAPE:
+                run = False
 
-        ShowFPS()
-        pme.update()
-        pme.screen.fill(COLOR_BLACK)
-        GAME_CLOCK.tick(GAME_FPS)
+    """
+    ShowFPS()    
+
+    return result    

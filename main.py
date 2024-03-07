@@ -12,11 +12,14 @@ class GameMode(Enum):
     CHARACTER_CREATION = 0x8
     LOAD_CHARACTER = 0x10
 
+class CreateSaveState():
+    difficulty_index = 0
+
 def main():    
     game_mode = GameMode.MAIN_MENU.value
     is_running = True
     saves =  0
-
+    create_save_state = CreateSaveState()
     while is_running:
         for ev in pme.get_events():
             if ev.type == QUIT:
@@ -115,7 +118,7 @@ def main():
                     game_mode = GameMode.PLAYING.value
         elif game_mode & GameMode.CHARACTER_CREATION.value:
             if len(saves) < GAME_MAX_SAVES:
-                if create_save():
+                if create_save(create_save_state):
                     time.sleep(1.0/10.0) #@TODO: Cheap hack
                     game_mode = GameMode.LOAD_CHARACTER.value
             saves = db.get_all(table_name='saves')

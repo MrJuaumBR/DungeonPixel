@@ -100,10 +100,9 @@ def play_select_character():#@TODO: Delete function?
     pme.screen.fill(COLOR_BLACK)
     GAME_CLOCK.tick(GAME_FPS)
 
-def create_save():
+def create_save(create_save_state):
     result = False
 
-    DifficultyIndex = 0
     DifficultyList = ['Easy','Normal','Hard']
 
     SavesList = db.get_all(table_name='saves')
@@ -113,13 +112,14 @@ def create_save():
     pme.draw_text(32*GAME_SCREEN_RATIO[0],32*GAME_SCREEN_RATIO[1],'Create New Save', FONT_ANDALIA52, COLOR_WHITE)
 
     # Difficulty
-    pme.draw_text(64*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1],f'Difficulty: {DifficultyList[DifficultyIndex]}', FONT_DOGICAPIXEL28, COLOR_WHITE)
-    DifficultyIndex = pme.draw_select(128*GAME_SCREEN_RATIO[0],192*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],DifficultyList,DifficultyIndex)
+    pme.draw_text(64*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1],f'Difficulty: {DifficultyList[create_save_state.difficulty_index]}', FONT_DOGICAPIXEL28, COLOR_WHITE)
+    create_save_state.difficulty_index = pme.draw_select(128*GAME_SCREEN_RATIO[0],192*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],DifficultyList,create_save_state.difficulty_index)
 
     if pme.draw_button(64*GAME_SCREEN_RATIO[0],550*GAME_SCREEN_RATIO[1],'Create', FONT_DOGICAPIXEL28, COLOR_LIME, COLOR_BLACK):
         # Create Save
-        s = Save(len(SavesList),DifficultyIndex)
+        s = Save(len(SavesList),create_save_state.difficulty_index)
         s.save()
+        create_save_state.difficulty_index = 0
         result = True
     """
     for ev in pme.get_events():

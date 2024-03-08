@@ -1,13 +1,17 @@
 from ..config import *
 from ..src.camera import *
 from ..src.save import *
+from .gameSrc.tiles import *
 
 def game(save:Save):
     run = True
 
-    player:G_Player = save.player
+    player:G_Player = save.plr
 
     Camera = CameraGroup(player=player)
+
+    Tile = TileBase(pos=(64,64))
+    Camera.add(Tile)
 
     while run:
         for ev in pme.get_events():

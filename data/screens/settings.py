@@ -30,7 +30,7 @@ def settings():
         CheckBx_SHOW_FPS = pme.draw_checkbox(64*GAME_SCREEN_RATIO[0],416*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL18,'Show Fps',CheckBx_SHOW_FPS,[(35,35,35),(100,190,125),(200,200,200)])
 
         
-        for ev in pme.get_events():
+        for ev in pme.get_events(): 
             if ev.type == QUIT:
                 pme.quit()
             elif ev.type == KEYDOWN:

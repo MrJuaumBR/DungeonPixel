@@ -1,4 +1,5 @@
-from ..game import *
+from ...config import *
+from ...src.save import player as G_Player
 
 class TileBase(pyg.sprite.Sprite):
     name = 'TileBase'
@@ -9,8 +10,16 @@ class TileBase(pyg.sprite.Sprite):
 
     type = 'tile'
 
-    offset_pos:pyg.math.Vector2
-    def __init__(self, image:pyg.Surface, pos:tuple) -> None:
+    offset_pos:pyg.math.Vector2 = pyg.math.Vector2()
+
+    size:tuple[int,int] = (32,32)
+    image:pyg.Surface
+    def __init__(self, pos:tuple) -> None:
         super().__init__()
-        self.image = image
+        self.image = pyg.Surface(self.size,pyg.SRCALPHA)
+        self.image.fill((255,255,0,100))
         self.rect = self.image.get_rect(topleft=pos)
+        
+
+    def update(self,player:G_Player) -> None:
+        pass

@@ -5,6 +5,7 @@ Imports
 from .src.engine import *
 from .src.auto_installer import AutoInstaller
 from .src.scale import *
+from random import randint
 
 # Auto Installer Setup
 AUI = AutoInstaller()
@@ -27,9 +28,10 @@ CONFIG_DEFAULT = {
     'SHOW_FPS':False
 }
 
-db_createTables()
+db_createTables() # Try to create Database Tables
 
 if len(db.get_all('config')) == 0: # Has no Config
+    # If Has no Config Data, Then Create.
     db.add_values('config',columns=['data'],values=[CONFIG_DEFAULT])
     db.save()
     print('Config Added.')
@@ -38,7 +40,6 @@ if len(db.get_all('config')) == 0: # Has no Config
     
 CONFIG:dict = db.get_value('config','data',0)
 
-# ['640x480','800x600','1024x768']
 GAME_RES_LIST:list[tuple[int,int],] = [(640,480),(800,600),(1024,768)]
 GAME_FPS_LIST:list[int,] = [30,60,90,120]
 
@@ -48,7 +49,7 @@ GAME_FPS:int = GAME_FPS_LIST[CONFIG['FPS']]
 GAME_TITLE = "Dungeon Pixel"
 GAME_SCREEN_WIDTH,GAME_SCREEN_HEIGHT = CFG_RES
 GAME_SCREEN_FLAGS = SCALED
-GAME_VERSION = '0.0.1'
+GAME_VERSION = '0.0.2'
 GAME_MAX_SAVES = 6
 
 GAME_SCREEN_RATIO = ScaleRatio(GAME_SCREEN_WIDTH,GAME_SCREEN_HEIGHT)

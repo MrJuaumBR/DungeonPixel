@@ -47,15 +47,23 @@ class CameraGroup(pyg.sprite.Group):
             self.zoom = 1
 
     def update(self):
-        pass
-
-    def draw(self):
-
         # Center the camera on the player
         self.center_target_camera(self.player)
         
         # Control the zoom level using keyboard input
         self.zoom_keyboard_control()
+
+        # Update all sprites inside
+        for sprite in self.sprites():
+            try:
+                if str.lower(sprite.type) != 'player':
+                    sprite.update(self.player)
+                else:
+                    sprite.update()
+            except Exception as e:
+                print(e)
+
+    def draw(self):
 
         # Fill the internal surface with a black color
         self.internal_surf.fill(COLOR_BLACK)

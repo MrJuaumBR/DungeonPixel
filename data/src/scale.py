@@ -7,3 +7,6 @@ SIZE_SCREEN_HEIGHT = 600
 
 def ScaleRatio(WIDTH:int,HEIGHT:int) -> tuple[float,float]:
     return WIDTH / SIZE_SCREEN_WIDTH, HEIGHT / SIZE_SCREEN_HEIGHT
+
+def FPS2Seconds(FPS:int) -> float:
+    return 1 / FPS

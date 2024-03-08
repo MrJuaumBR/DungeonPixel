@@ -68,7 +68,8 @@ def play_select_character():
                 create_save()
                 saves = db.get_all(table_name='saves')
                 saves = PreLoadSaves(saves)
-        if pme.draw_button(350*GAME_SCREEN_RATIO[0],550*GAME_SCREEN_RATIO[1],f'Load: {SaveIndex+1}', FONT_DOGICAPIXEL28, COLOR_LIME, COLOR_DARKGRAY):
+        pme.draw_text(350*GAME_SCREEN_RATIO[0],575*GAME_SCREEN_RATIO[1],f'Save: {int(SaveIndex)+1}', FONT_DOGICAPIXEL18, COLOR_WHITE)
+        if pme.draw_button(700*GAME_SCREEN_RATIO[0],550*GAME_SCREEN_RATIO[1],f'Play', FONT_DOGICAPIXEL28, COLOR_LIME, COLOR_DARKGRAY):
             # Load Save
             if len(saves) > 0:
                 save:Save = saves[SaveIndex_InList]

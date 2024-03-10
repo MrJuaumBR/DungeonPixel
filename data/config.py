@@ -66,7 +66,7 @@ PATH_FONTS = PATH_ASSETS + 'fonts/'
 
 # Init Engine
 pme = Engine()
-SCREEN = pme.create_screen(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT, GAME_SCREEN_FLAGS)
+SCREEN = pme.create_window(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT, GAME_SCREEN_FLAGS)
 pme.screen_set_title(GAME_TITLE)
 
 # Fonts Path

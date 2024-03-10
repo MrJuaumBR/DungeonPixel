@@ -24,16 +24,16 @@ def main():
             db.update_value(table_name='config',column_name='data',id=0,value=CONFIG)
             db.save()
         if pme.draw_button(64*GAME_SCREEN_RATIO[0],256*GAME_SCREEN_RATIO[1],'Quit', FONT_DOGICAPIXEL36, COLOR_LIGHTRED, COLOR_BLACK):
-            pme.quit()
+            pme.destroy_window()
         
 
         for ev in pme.get_events():
             if ev.type == QUIT:
-                pme.quit()
+                pme.destroy_window()
                 exit()
             if ev.type == KEYDOWN:
                 if ev.key == K_ESCAPE:
-                    pme.quit()
+                    pme.destroy_window()
         ShowFPS()
         pme.update()
         pme.screen.fill(COLOR_BLACK)

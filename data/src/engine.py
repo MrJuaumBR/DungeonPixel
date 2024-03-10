@@ -35,7 +35,7 @@ class Engine():
 
 
     # Engine Base Functions
-    def create_screen(self, width:int, height:int, flags:int=0) -> pyg.Surface:
+    def create_window(self, width:int, height:int, flags:int=0) -> pyg.Surface:
         """
         Create the screen object, and return it
 
@@ -139,7 +139,7 @@ class Engine():
         """
         pyg.display.set_caption(title)
 
-    def quit(self):
+    def destroy_window(self):
         """
         Quit the game
 

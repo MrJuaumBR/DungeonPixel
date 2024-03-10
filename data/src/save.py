@@ -34,7 +34,7 @@ class player(pyg.sprite.Sprite):
         super().__init__(*groups)
         self.SaveClass = SaveClass
         try:
-            self.Camera = self.groups()[0]
+            self.Camera = None #self.groups()[0]
         except Exception as e:
             print(f'[Save - Player - Init] {e}')
             pass

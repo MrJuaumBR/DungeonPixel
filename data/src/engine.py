@@ -369,11 +369,12 @@ class Engine():
         self.draw_rect(x,y,colors[0],(width,self.slider_height),surface=surface)
 
         # Detail
+        line = 0
         if detail:
-            pyg.draw.line(surface or self.screen,colors[2],(x+5,y+(self.slider_height//2)),((x+width)-5,y+(self.slider_height//2)),2)
+            line = pyg.draw.line(surface or self.screen,colors[2],(x+5,y+(self.slider_height//2)),((x+width)-5,y+(self.slider_height//2)),8)
 
         b = self.draw_circle(curPosX,y+(self.slider_height//2),colors[1],5,surface=surface)
-        if b.collidepoint(m_pos.x, m_pos.y):
+        if line.collidepoint(m_pos.x, m_pos.y):
             if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                 curPosX = m_pos.x
                 if curPosX < x:

@@ -43,7 +43,7 @@ def play_select_character():
                 d = pme.draw_button(Save_X[i]+80*GAME_SCREEN_RATIO[0],Save_Y,'Delete', FONT_DOGICAPIXEL10, COLOR_LIGHTRED, COLOR_BLACK)
 
                 if pme.is_mouse_hover(b):
-                    if pme.mouse_pressed(0):
+                    if pme.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                         b = True
                     else:
                         b = False

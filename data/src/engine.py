@@ -5,6 +5,17 @@ import sys
 
 E_ONLY_FULLSCREEN = -2147483648
 E_FULLSCREEN_SCALED = -2147483136
+MOUSE_BUTTON_LEFT = 0
+MOUSE_BUTTON_RIGHT = 2
+MOUSE_BUTTON_MIDDLE = 1
+
+class Position():
+    x = 0
+    y = 0
+
+    def __init__(self, x: int, y: int) -> None:
+        self.x = x
+        self.y = y
 
 class Engine():
     """
@@ -128,7 +139,7 @@ class Engine():
         """
         pyg.display.update()
     
-    def screen_set_title(self, title:str):
+    def set_window_title(self, title:str):
         """
         Set the title of the screen
 
@@ -261,7 +272,7 @@ class Engine():
         """
         re:pyg.rect.RectType = self.draw_text(x, y, text, font, color, bg_color, surface)
         if self.is_mouse_hover(re):
-            if self.mouse_pressed(0):
+            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                 pyg.time.delay(self.button_click_delay)
                 return True
             else:
@@ -311,7 +322,7 @@ class Engine():
         w,h = font.size(f'{text}') # Width & HEight
         bw = w//4
 
-        m_pos = self.mouse_pos()
+        m_pos = self.get_mouse_position()
 
         ColorSelect = lambda: colors[1] if checked else colors[2]
 
@@ -321,8 +332,8 @@ class Engine():
         if checked:
             pyg.draw.rect(surface or self.screen,colors[1],(x+2,y+2,bw-4,h-4))
             
-        if b1.collidepoint(m_pos) or b2.collidepoint(m_pos):
-            if self.mouse_pressed(0):
+        if b1.collidepoint(m_pos.x, m_pos.y) or b2.collidepoint(m_pos.x, m_pos.y):
+            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                 checked = not checked
                 pyg.time.delay(self.select_click_delay)
 
@@ -346,7 +357,7 @@ class Engine():
         """
         if not curPosX:
             curPosX = x
-        m_pos = self.mouse_pos()
+        m_pos = self.get_mouse_position()
         MaxX = x + width
         percentage = curPosX/ MaxX
         if percentage < 0:
@@ -362,9 +373,9 @@ class Engine():
             pyg.draw.line(surface or self.screen,colors[2],(x+5,y+(self.slider_height//2)),((x+width)-5,y+(self.slider_height//2)),2)
 
         b = self.draw_circle(curPosX,y+(self.slider_height//2),colors[1],5,surface=surface)
-        if b.collidepoint(m_pos):
-            if self.mouse_pressed(0):
-                curPosX = m_pos[0]
+        if b.collidepoint(m_pos.x, m_pos.y):
+            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+                curPosX = m_pos.x
                 if curPosX < x:
                     curPosX = x
                 if curPosX > MaxX:
@@ -407,10 +418,10 @@ class Engine():
         if type(surface) == pyg.Surface:
             surface:pyg.rect.RectType = surface.get_rect()
         
-        m_pos = self.mouse_pos()
-        return surface.collidepoint(m_pos[0], m_pos[1])
+        m_pos = self.get_mouse_position()
+        return surface.collidepoint(m_pos.x, m_pos.y)
 
-    def mouse_pressed(self, button:int, mouse_type:int=3) -> bool:
+    def is_mouse_button_pressed(self, button:int, mouse_type:int=3) -> bool:
         """
         Check if the mouse button is pressed
 
@@ -422,7 +433,7 @@ class Engine():
         """
         return pyg.mouse.get_pressed(mouse_type)[button]
 
-    def mouse_pos(self) -> tuple[int,int]:
+    def get_mouse_position(self) -> Position:
         """
         Get the mouse pos
 
@@ -431,7 +442,10 @@ class Engine():
         Returns:
             tuple[int,int]: The mouse pos
         """
-        return pyg.mouse.get_pos()
+        position_tuple = pyg.mouse.get_pos()
+        result = Position(position_tuple[0], position_tuple[1])
+        
+        return result
 
     # Engine Need Functions
     def load_image(self, image_path:str) -> pyg.surface:

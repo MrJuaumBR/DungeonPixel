@@ -384,6 +384,37 @@ class Engine():
         
         return curPosX, percentage
 
+    def draw_slider2(self, x:int, y:int, width:int, colors:list[tuple[int,int,int]],curPosX:int, Slider_VolumePercentage, surface:pyg.Surface=None, detail:bool=False) -> tuple[int, float]:
+        if not curPosX:
+            curPosX = x
+        m_pos = self.get_mouse_position()
+        MaxX = x + (width - 1)        
+
+        # Background
+        #pyg.draw.rect(self.screen, colors[0], pyg.Rect(x, y, width, self.slider_height))
+
+        # Detail            
+        line = 0
+        thickness = 8
+        if detail:
+            #line = pyg.draw.line(surface or self.screen,colors[2],(x+5,y+(self.slider_height//2)),((x+width)-5,y+(self.slider_height//2)),8)            
+            line = pyg.draw.line(surface or self.screen, colors[2], (x, y), (x + width, y), thickness)
+
+        percentage = Slider_VolumePercentage
+        b = self.draw_circle(curPosX, y + 1, colors[1], 5, surface=surface)
+        if line.collidepoint(m_pos.x, m_pos.y):
+            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+                curPosX = m_pos.x
+                percentage = (m_pos.x - x) / width
+                print(percentage)
+                if curPosX < x:
+                    curPosX = x
+                if curPosX > MaxX:
+                    curPosX = MaxX   
+        
+        
+        return curPosX, percentage
+
     # Logic Functions
     def keys_pressed(self) -> pyg.key.ScancodeWrapper:
         """

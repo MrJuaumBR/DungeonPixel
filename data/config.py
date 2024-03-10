@@ -12,7 +12,7 @@ AUI = AutoInstaller()
 
     # Try to install all requirements
 try:
-    AUI.InstallAll()
+    pass #AUI.InstallAll()
 except:
     pass
 

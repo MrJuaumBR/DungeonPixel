@@ -1,4 +1,5 @@
 from ..config import *
+import math
 
 # Game Player Sprite, Logic, and Load
 class player(pyg.sprite.Sprite):
@@ -17,7 +18,7 @@ class player(pyg.sprite.Sprite):
 
     # Hidden Status
 
-    speed:int = 2
+    speed:float = 0.3 # speed:int = 2
     drag:float = 0.65
     position_vec:pyg.math.Vector2 = pyg.math.Vector2()
 
@@ -102,30 +103,12 @@ class player(pyg.sprite.Sprite):
                 if sprite.can_collide: # If Sprite can Collide with Player
                     if sprite.type != self.type: # If Sprite is not Player
                         if self.rect.colliderect(sprite.rect): # If Player collides with Sprite
-                            if abs(self.position_vec.x) > 0: # If Player is moving X
-                                # Collision of Right Side of Player in Left Side of Sprite
-                                # Moving From Left To Right, X is getting bigger
-                                if self.rect.right > sprite.rect.left and self.position_vec.x > 0:
-                                    self.position_vec.x = 0
-                                    self.rect.right = sprite.rect.left
-                                # Collision of Left Side of Player in Right Side of Sprite
-                                # Moving From Right To Left, X is getting smaller
-                                if self.rect.left < sprite.rect.right and self.position_vec.x < 0:
-                                    self.position_vec.x = 0
-                                    self.rect.left = sprite.rect.right
-                                    
-                            if abs(self.position_vec.y) > 0: # If Player is moving Y
-                                # Collision of Bottom Side of Player in Top Side of Sprite
-                                # Moving From Top To Bottom, Y is getting bigger
-                                if self.rect.bottom > sprite.rect.top and self.position_vec.y > 0:
-                                    self.position_vec.y = 0
-                                    self.rect.bottom = sprite.rect.top
-                                # Collision of Top Side of Player in Bottom Side of Sprite
-                                # Moving From Bottom To Top, Y is getting smaller
-                                if self.rect.top < sprite.rect.bottom and self.position_vec.y < 0:
-                                    self.position_vec.y = 0
-                                    self.rect.top = sprite.rect.bottom
-                                    
+                            dx = self.rect.x - sprite.rect.x
+                            dy = self.rect.y - sprite.rect.y
+                            angle = math.atan2(dy, dx)
+                            adjustment_to_prevent_overlap = self.speed * 4.0
+                            self.rect.x += self.position_vec.x + adjustment_to_prevent_overlap * math.cos(angle)
+                            self.rect.y += self.position_vec.y + adjustment_to_prevent_overlap * math.sin(angle)
         else: # If Camera Group Has Not Defined
             if len(self.groups()) > 0: # If Player Has Groups
                 self.Camera = self.groups()[0] # Set Camera Group

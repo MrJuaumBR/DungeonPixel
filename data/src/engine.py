@@ -64,7 +64,7 @@ class Engine():
         """
         return pyg.event.get()
     
-    def create_font(self, font:str, size:int,bold:bool=False, italic:bool=False) -> list[pyg.font.FontType, int]:
+    def create_font(self, font_name:str, font_size:int, is_bold:bool=False, is_italic:bool=False) -> list[pyg.font.FontType, int]:
         """
         Create a SysFont object, and add to array
 
@@ -76,7 +76,7 @@ class Engine():
         Returns:
             list[pyg.font.Font, int]: The font object and its index
         """
-        f = pyg.font.SysFont(font, size, bold, italic)
+        f = pyg.font.SysFont(font_name, font_size, is_bold, is_italic)
         if not (f in self.fonts):
             print('[Engine] Font created')
             self.fonts.append(f)
@@ -86,7 +86,7 @@ class Engine():
             return self.fonts[font_index], font_index
         return f,self.fonts.index(f)
     
-    def create_font2(self, font_file:str, size:int) -> list[pyg.font.FontType, int]:
+    def create_font_from_file(self, file_path:str, font_size:int) -> list[pyg.font.FontType, int]:
         """
         Create a Font object, and add to array
 
@@ -96,7 +96,7 @@ class Engine():
         Returns:
             list[pyg.font.Font, int]: The font object and its index
         """
-        f = pyg.font.Font(font_file, size)
+        f = pyg.font.Font(file_path, font_size)
         if not (f in self.fonts):
             print('[Engine] Font created')
             self.fonts.append(f)

@@ -348,7 +348,7 @@ class Engine():
                 pyg.time.delay(self.select_click_delay) #@HACK
 
         self.debug_draw_lines_for_rectangular_shape(self.screen, b1)
-        if checked:
+        if type(r) == pyg.Rect:
             self.debug_draw_lines_for_rectangular_shape(self.screen, r)
 
         return checked

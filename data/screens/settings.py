@@ -22,7 +22,7 @@ def settings(game_state):
         slider_padding_y = 16
         slider_x = 18 #volume_surface.x - slider_padding_x
         slider_y = volume_surface.y + volume_surface.height + slider_padding_y
-        #@NOTE: if slider_x and slider_width are base on volume_surface then the slider will be buggy because it will vary based on the text with is dynamic
+        #@NOTE: if slider_x and slider_width are base on volume_surface.width then the slider will be buggy because it will vary based on the text width which is dynamic
         game_state.Slider_VolumePos, game_state.Slider_VolumePercentage = pme.draw_slider(slider_x, slider_y, slider_width, [(35,35,35),(100,190,125),(200,200,200)],game_state.Slider_VolumePos,game_state.Slider_VolumePercentage, detail=True)
 
             # Screen size

@@ -161,6 +161,13 @@ class Engine():
         """
         pyg.quit()
         sys.exit()
+
+    def debug_draw_lines_for_rectangular_shape(self, surface: pyg.Surface, rectangle: pyg.Rect):
+        r = rectangle
+        pyg.draw.line(surface, (255, 0, 0), (r.x, r.y), (r.x + r.width - 1, r.y))
+        pyg.draw.line(surface, (255, 0, 0), (r.x, r.y + r.height - 1), (r.x + r.width - 1, r.y + r.height - 1))
+        pyg.draw.line(surface, (255, 0, 0), (r.x, r.y), (r.x, r.y + r.height - 1))
+        pyg.draw.line(surface, (255, 0, 0), (r.x + r.width - 1, r.y), (r.x + r.width - 1, r.y + r.height - 1))
     
     # Draw Functions
     def draw_text(self,x:int,y:int, text:str, font:int or pyg.font.FontType, color:tuple[int,int,int], bg_color:tuple[int,int,int]=None, surface:pyg.Surface=None)-> Rect: # type: ignore
@@ -187,6 +194,9 @@ class Engine():
             surf = surface.blit(text_render, (x, y))
         else:
             surf:pyg.rect.RectType = self.screen.blit(text_render, (x, y))
+                
+        self.debug_draw_lines_for_rectangular_shape(self.screen, surf)
+        
         return surf
     
     def draw_rect(self,x:int,y:int, color:tuple[int,int,int,],size:tuple[int,int],border_width:int=0,border_color:tuple[int,int,int,]=None,surface:pyg.Surface=None) -> Rect: # type: ignore
@@ -247,13 +257,11 @@ class Engine():
         Returns:
             circle surface(Rect): The rect of circle surface
         """
-        if surface:
-            surf = surface
-        else:
-            surf = self.screen
+        if surface == None:
+            surface = self.screen
 
-        c = pyg.draw.circle(surf, color, (x, y), radius)
-        return c
+        result = pyg.draw.circle(surface, color, (x, y), radius)
+        return result
 
     def draw_button(self,x:int,y:int,text:str, font:int or pyg.font.FontType, color:tuple[int,int,int], bg_color:tuple[int,int,int], surface:pyg.Surface=None) -> bool: # type: ignore
         """
@@ -270,14 +278,15 @@ class Engine():
         Returns:
             bool: The button state
         """
+        result = False
+
         re:pyg.rect.RectType = self.draw_text(x, y, text, font, color, bg_color, surface)
         if self.is_mouse_hover(re):
             if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-                pyg.time.delay(self.button_click_delay)
-                return True
-            else:
-                return False
-        return False
+                pyg.time.delay(self.button_click_delay) #@HACK
+                result = True
+        
+        return result
 
     def draw_select(self, x:int, y:int, font:int or pyg.font.FontType, colors:list[tuple[int,int,int]],selectList:list[any,],index:int, surface:pyg.Surface=None) -> int: # type: ignore
         """
@@ -305,10 +314,10 @@ class Engine():
 
         if backBtn:
             index -= 1
-            pyg.time.delay(self.select_click_delay)
+            pyg.time.delay(self.select_click_delay) #@HACK
         if nextBtn:
             index += 1
-            pyg.time.delay(self.select_click_delay)
+            pyg.time.delay(self.select_click_delay) #@HACK
         if index > len(selectList)-1:
             index = 0
         if index < 0:
@@ -329,13 +338,18 @@ class Engine():
         b2:pyg.rect.RectType = self.draw_text(x+bw+5,y,text,font,ColorSelect(),surface)
 
         b1 = pyg.draw.rect(surface or self.screen,colors[0],(x,y,bw,h))
+        r = 0
         if checked:
-            pyg.draw.rect(surface or self.screen,colors[1],(x+2,y+2,bw-4,h-4))
+            r = pyg.draw.rect(surface or self.screen,colors[1],(x+2,y+2,bw-4,h-4))
             
         if b1.collidepoint(m_pos.x, m_pos.y) or b2.collidepoint(m_pos.x, m_pos.y):
             if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                 checked = not checked
-                pyg.time.delay(self.select_click_delay)        
+                pyg.time.delay(self.select_click_delay) #@HACK
+
+        self.debug_draw_lines_for_rectangular_shape(self.screen, b1)
+        if checked:
+            self.debug_draw_lines_for_rectangular_shape(self.screen, r)
 
         return checked
     
@@ -356,6 +370,9 @@ class Engine():
             if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                 slider_percentage = ((mouse_position.x - x) + 1) / width
                 slider_x = mouse_position.x
+
+        self.debug_draw_lines_for_rectangular_shape(self.screen, background_rectangle)
+        self.debug_draw_lines_for_rectangular_shape(self.screen, circle_rectangle)
 
         return slider_x, slider_percentage
     

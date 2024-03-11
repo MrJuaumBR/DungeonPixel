@@ -335,86 +335,30 @@ class Engine():
         if b1.collidepoint(m_pos.x, m_pos.y) or b2.collidepoint(m_pos.x, m_pos.y):
             if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                 checked = not checked
-                pyg.time.delay(self.select_click_delay)
-
-        
+                pyg.time.delay(self.select_click_delay)        
 
         return checked
+    
+    def draw_slider(self, x:int, y:int, width:int, colors:list[tuple[int,int,int]],curPosX:int, Slider_VolumePercentage, surface:pyg.Surface=None, detail:bool=False) -> tuple[int, float]:
+        slider_percentage = Slider_VolumePercentage
+        slider_x = curPosX
+        
+        background_rectangle = pyg.draw.rect(self.screen, colors[0], pyg.Rect(x, y, width, self.slider_height + 8))
+        
+        circle_radius = 5        
+        circle_y = y + circle_radius
+        circle_color = colors[1]
+        circle_x = ((Slider_VolumePercentage * width) - 1) + x #curPosX    
+        circle_rectangle = self.draw_circle(circle_x, circle_y, circle_color, circle_radius, surface=surface)
 
-    def draw_slider(self, x:int, y:int, width:int, colors:list[tuple[int,int,int]],curPosX:int, surface:pyg.Surface=None,detail:bool=False) -> tuple[int, float]:
-        """
-        Draw a slider and return the value and percentage
-
-        Parameters:
-            x (int): The x pos
-            y (int): The y pos
-            width (int): The width
-            colors (list[tuple[int,int,int]]): The colors
-            maxValue (int): The max value
-            surface (pyg.Surface): The surface
-        Returns:
-            tuple[int, float]: The value and percentage
-        """
-        if not curPosX:
-            curPosX = x
-        m_pos = self.get_mouse_position()
-        MaxX = x + width
-        percentage = curPosX/ MaxX
-        if percentage < 0:
-            percentage = 0
-        if percentage > 1:
-            percentage = 1
-
-        # Background
-        self.draw_rect(x,y,colors[0],(width,self.slider_height),surface=surface)
-
-        # Detail
-        line = 0
-        if detail:
-            line = pyg.draw.line(surface or self.screen,colors[2],(x+5,y+(self.slider_height//2)),((x+width)-5,y+(self.slider_height//2)),8)
-
-        b = self.draw_circle(curPosX,y+(self.slider_height//2),colors[1],5,surface=surface)
-        if line.collidepoint(m_pos.x, m_pos.y):
+        mouse_position = self.get_mouse_position()
+        if background_rectangle.collidepoint(mouse_position.x, mouse_position.y):
             if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-                curPosX = m_pos.x
-                if curPosX < x:
-                    curPosX = x
-                if curPosX > MaxX:
-                    curPosX = MaxX
-        
-        return curPosX, percentage
+                slider_percentage = ((mouse_position.x - x) + 1) / width
+                slider_x = mouse_position.x
 
-    def draw_slider2(self, x:int, y:int, width:int, colors:list[tuple[int,int,int]],curPosX:int, Slider_VolumePercentage, surface:pyg.Surface=None, detail:bool=False) -> tuple[int, float]:
-        if not curPosX:
-            curPosX = x
-        m_pos = self.get_mouse_position()
-        MaxX = x + (width - 1)        
-
-        # Background
-        #pyg.draw.rect(self.screen, colors[0], pyg.Rect(x, y, width, self.slider_height))
-
-        # Detail            
-        line = 0
-        thickness = 8
-        if detail:
-            #line = pyg.draw.line(surface or self.screen,colors[2],(x+5,y+(self.slider_height//2)),((x+width)-5,y+(self.slider_height//2)),8)            
-            line = pyg.draw.line(surface or self.screen, colors[2], (x, y), (x + width, y), thickness)
-
-        percentage = Slider_VolumePercentage
-        b = self.draw_circle(curPosX, y + 1, colors[1], 5, surface=surface)
-        if line.collidepoint(m_pos.x, m_pos.y):
-            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-                curPosX = m_pos.x
-                percentage = (m_pos.x - x) / width
-                print(percentage)
-                if curPosX < x:
-                    curPosX = x
-                if curPosX > MaxX:
-                    curPosX = MaxX   
-        
-        
-        return curPosX, percentage
-
+        return slider_x, slider_percentage
+    
     # Logic Functions
     def keys_pressed(self) -> pyg.key.ScancodeWrapper:
         """

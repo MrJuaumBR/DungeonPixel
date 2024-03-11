@@ -2,10 +2,10 @@ from data.config import *
 from data.screens.play import *
 from data.screens.settings import *
 
-
 class GameState:
     Slider_VolumePercentage = 0
     Slider_VolumePos = 0
+
 def main():
     game_state = GameState()
     game_state.Slider_VolumePercentage = CONFIG['VOLUME'] or 0

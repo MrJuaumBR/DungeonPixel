@@ -106,6 +106,8 @@ def create_save():
     DifficultyIndex = 0
     DifficultyList = ['Easy','Normal','Hard']
 
+    DebugIndex = 0
+
     SavesList = db.get_all(table_name='saves')
 
     while run:
@@ -115,9 +117,14 @@ def create_save():
         pme.draw_text(64*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1],f'Difficulty: {DifficultyList[DifficultyIndex]}', FONT_DOGICAPIXEL28, COLOR_WHITE)
         DifficultyIndex = pme.draw_select(128*GAME_SCREEN_RATIO[0],192*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],DifficultyList,DifficultyIndex)
 
+        # Is Debug
+        pme.draw_text(64*GAME_SCREEN_RATIO[0],256*GAME_SCREEN_RATIO[1],f'Is Debug:', FONT_DOGICAPIXEL28, COLOR_WHITE)
+        DebugIndex = pme.draw_select(128*GAME_SCREEN_RATIO[0],320*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],['No','Yes'],DebugIndex)
+
         if pme.draw_button(64*GAME_SCREEN_RATIO[0],550*GAME_SCREEN_RATIO[1],'Create', FONT_DOGICAPIXEL28, COLOR_LIME, COLOR_BLACK):
             # Create Save
             s = Save(len(SavesList),DifficultyIndex)
+            s.plr.debug = DebugIndex or 0
             s.save()
             run = False
 

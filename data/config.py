@@ -6,6 +6,7 @@ from .src.engine import *
 from .src.auto_installer import AutoInstaller
 from .src.scale import *
 from random import randint
+from math import sqrt
 
 # Auto Installer Setup
 AUI = AutoInstaller()
@@ -94,6 +95,9 @@ COLOR_DARKGRAY = (40, 40, 40)
 COLOR_LIGHTRED = (255, 150, 150)
 
 # Misc Functions
+
+GetMultiplierToUpOrDown = lambda x: 1 if x > 0 else -1
+
 def ShowFPS():
     if CONFIG['SHOW_FPS']:
         color = COLOR_WHITE

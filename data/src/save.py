@@ -2,7 +2,7 @@ from ..config import *
 
 # Game Player Sprite, Logic, and Load
 class player(pyg.sprite.Sprite):
-    saveable = ['name','rect']
+    saveable = ['name','rect','debug']
 
     name = 'Zord'
     layer = 2
@@ -17,9 +17,12 @@ class player(pyg.sprite.Sprite):
 
     # Hidden Status
 
-    speed:int = 2
+    speed:int = 3
     drag:float = 0.65
+    max_speed: int = 5
     position_vec:pyg.math.Vector2 = pyg.math.Vector2()
+
+    debug:bool = False
 
     # Shown status
     def __init__(self, SaveClass,*groups) -> None:
@@ -71,8 +74,26 @@ class player(pyg.sprite.Sprite):
             self.position_vec.y -= self.speed
         elif Mov_Down:
             self.position_vec.y += self.speed
-        
+    
+    def _get_magnitude(self) -> float:
+        """Same as player speed"""
+        vector_x:float = self.position_vec.x
+        vector_y:float = self.position_vec.y
+
+        magnitude:float = (vector_x**2 + vector_y**2)**0.5
+        return magnitude
+
     def _manager_movment(self):
+        # Calculate the magnitude of the movement vector
+        magnitude = self._get_magnitude()
+
+        # limit the magnitude of the movement vector to the maximum speed
+        if magnitude >= self.max_speed:
+            scale_factor = self.max_speed / magnitude
+            self.position_vec.x *= scale_factor
+            self.position_vec.y *= scale_factor
+
+        # Apply movement with or no the scale factor
         if self.position_vec.x != 0:
             self.rect.x += self.position_vec.x
         if self.position_vec.y != 0:
@@ -96,45 +117,90 @@ class player(pyg.sprite.Sprite):
         else:
             self.position_vec.y = 0
 
+    def _handle_x_collision(self,sprites:list[pyg.sprite.Sprite,]) -> list:
+        x_collision = []
+        # Handle collision logic for X Direction
+        # Add collision sprites to x_collision list
+        for sprite in sprites:
+            if str(sprite.type).lower() != str(self.type).lower(): # Ignore Player
+                if self.rect.colliderect(sprite.rect):
+                    # If Vector X Was changing
+                    if self.position_vec.x != 0:
+                        # X from Screen Starts at left and goes to right
+                        # Player Right > Sprite Left
+                        if self.rect.right > sprite.rect.left and self.position_vec.x > 0: # if right side of player is touching left side of sprite and is moving
+                            x_collision.append(sprite)
+                        # Player Left < Sprite Right
+                        if self.rect.left < sprite.rect.right and self.position_vec.x < 0: # if left side of player is touching right side of sprite and is moving
+                            x_collision.append(sprite)
+        return x_collision
+
+    def _handle_y_collision(self,sprites:list[pyg.sprite.Sprite,]) -> list:
+        y_collision = []
+        # Handle collision logic for Y Direction
+        # Add collision sprites to y_collision list
+        for sprite in sprites:
+            if str(sprite.type).lower() != str(self.type).lower(): # Ignore Player
+                if self.rect.colliderect(sprite.rect):
+                    # If Vector Y Was changing
+                    if self.position_vec.y != 0:
+                        # Y from Screen Starts at top and goes to bottom
+                        # Player Bottom > Sprite Top
+                        if self.rect.bottom > sprite.rect.top and self.position_vec.y > 0: # if bottom side of player is touching top side of sprite and is moving
+                            y_collision.append(sprite)
+                        # Player Top < Sprite Bottom
+                        if self.rect.top < sprite.rect.bottom and self.position_vec.y < 0: # if top side of player is touching bottom side of sprite and is moving
+                            y_collision.append(sprite)
+        return y_collision
+
+    def _resolve_x_collision(self,x_col:list[pyg.sprite.Sprite,]):
+         # For each sprite colliding
+            for sprite in x_col:
+                # make sure they are colliding
+                if self.rect.colliderect(sprite.rect):
+                    # If Vector X Was changing + 1
+                    if self.position_vec.x > 0: # Then is going to right side
+                        self.rect.right = min(sprite.rect.left, sprite.rect.left)
+                    elif self.position_vec.x < 0: # Then is going to left side
+                        self.rect.left = max(sprite.rect.right, sprite.rect.right)
+
+    def _resolve_y_collision(self,y_col:list[pyg.sprite.Sprite,]):
+        # For each sprite colliding
+            for sprite in y_col:
+                # make sure they are colliding
+                if self.rect.colliderect(sprite.rect):
+                    # If Vector Y Was changing + 1
+                    if self.position_vec.y > 0: # Then is going to bottom side
+                        self.rect.bottom = min(sprite.rect.top, sprite.rect.top)
+                    elif self.position_vec.y < 0: # Then is going to top side
+                        self.rect.top = max(sprite.rect.bottom, sprite.rect.bottom)
+
     def _manager_collision(self):
         if self.Camera: # If Camera Group Has Defined
-            for sprite in self.Camera.sprites(): # For Sprite in Camera Group
-                if sprite.can_collide: # If Sprite can Collide with Player
-                    if sprite.type != self.type: # If Sprite is not Player
-                        if self.rect.colliderect(sprite.rect): # If Player collides with Sprite
-                            if abs(self.position_vec.x) > 0: # If Player is moving X
-                                # Collision of Right Side of Player in Left Side of Sprite
-                                # Moving From Left To Right, X is getting bigger
-                                if self.rect.right > sprite.rect.left and self.position_vec.x > 0:
-                                    self.position_vec.x = 0
-                                    self.rect.right = sprite.rect.left
-                                # Collision of Left Side of Player in Right Side of Sprite
-                                # Moving From Right To Left, X is getting smaller
-                                if self.rect.left < sprite.rect.right and self.position_vec.x < 0:
-                                    self.position_vec.x = 0
-                                    self.rect.left = sprite.rect.right
-                                    
-                            if abs(self.position_vec.y) > 0: # If Player is moving Y
-                                # Collision of Bottom Side of Player in Top Side of Sprite
-                                # Moving From Top To Bottom, Y is getting bigger
-                                if self.rect.bottom > sprite.rect.top and self.position_vec.y > 0:
-                                    self.position_vec.y = 0
-                                    self.rect.bottom = sprite.rect.top
-                                # Collision of Top Side of Player in Bottom Side of Sprite
-                                # Moving From Bottom To Top, Y is getting smaller
-                                if self.rect.top < sprite.rect.bottom and self.position_vec.y < 0:
-                                    self.position_vec.y = 0
-                                    self.rect.top = sprite.rect.bottom
-                                    
+            s = self.Camera.sprites()
+            x_col = self._handle_x_collision(s)
+            y_col = self._handle_y_collision(s)
+
+            if len(x_col) > 0:
+                self._resolve_x_collision(x_col)
+            if len(y_col) > 0:
+                self._resolve_y_collision(y_col)
         else: # If Camera Group Has Not Defined
             if len(self.groups()) > 0: # If Player Has Groups
                 self.Camera = self.groups()[0] # Set Camera Group
+
+    def Isdebug(self):
+        if self.debug:
+            pme.draw_text(5*GAME_SCREEN_RATIO[0], 1*GAME_SCREEN_RATIO[1], 'DEBUG MODE', FONT_DOGICAPIXEL12, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO[0], 14*GAME_SCREEN_RATIO[1], f'Magnitude(Speed): {round(self._get_magnitude(),4)}', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO[0], 26*GAME_SCREEN_RATIO[1], f'Position(Real): ({round(self.rect.x)}, {round(self.rect.y)})         Position(Offset): ({round(self.offset_pos.x)}, {round(self.offset_pos.y)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
 
     def update(self) -> None:
         self._manager_keyboard()
         self._manager_drag()
         self._manager_movment()
         self._manager_collision()
+        self.Isdebug()
 
     def save(self) -> dict:
         """

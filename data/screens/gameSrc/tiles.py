@@ -23,3 +23,22 @@ class TileBase(pyg.sprite.Sprite):
 
     def update(self,player:G_Player) -> None:
         pass
+
+class Wall(TileBase):
+    name = 'Wall'
+    layer = 1
+
+    can_collide = True
+    can_action = False
+
+    type = 'wall'
+
+    offset_pos:pyg.math.Vector2 = pyg.math.Vector2()
+
+    size:tuple[int,int] = (32,32)
+    image:pyg.Surface
+    def __init__(self, pos:tuple) -> None:
+        super().__init__(pos)
+
+    def update(self,player:G_Player) -> None:
+        pass

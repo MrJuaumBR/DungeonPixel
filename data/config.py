@@ -12,7 +12,7 @@ AUI = AutoInstaller()
 
     # Try to install all requirements
 try:
-    AUI.InstallAll()
+    pass #AUI.InstallAll()
 except:
     pass
 
@@ -66,8 +66,8 @@ PATH_FONTS = PATH_ASSETS + 'fonts/'
 
 # Init Engine
 pme = Engine()
-SCREEN = pme.create_screen(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT, GAME_SCREEN_FLAGS)
-pme.screen_set_title(GAME_TITLE)
+SCREEN = pme.create_window(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT, GAME_SCREEN_FLAGS)
+pme.set_window_title(GAME_TITLE)
 
 # Fonts Path
 PATH_FONT_ANDALIA = PATH_FONTS + 'Andalia.ttf'
@@ -75,12 +75,12 @@ PATH_FONT_DOGICAPIXEL = PATH_FONTS + 'dogicapixel.ttf'
 
 # Create Fonts
 pme.create_font('Arial', 24)
-FONT_ANDALIA52,_ = pme.create_font2(PATH_FONT_ANDALIA, int(52*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL18,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(18*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL28,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(28*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL36,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(36*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL12,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(12*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL10,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(10*GAME_SCREEN_RATIO[0]))
+FONT_ANDALIA52,_ = pme.create_font_from_file(PATH_FONT_ANDALIA, int(52*GAME_SCREEN_RATIO[0]))
+FONT_DOGICAPIXEL18,_ = pme.create_font_from_file(PATH_FONT_DOGICAPIXEL, int(18*GAME_SCREEN_RATIO[0]))
+FONT_DOGICAPIXEL28,_ = pme.create_font_from_file(PATH_FONT_DOGICAPIXEL, int(28*GAME_SCREEN_RATIO[0]))
+FONT_DOGICAPIXEL36,_ = pme.create_font_from_file(PATH_FONT_DOGICAPIXEL, int(36*GAME_SCREEN_RATIO[0]))
+FONT_DOGICAPIXEL12,_ = pme.create_font_from_file(PATH_FONT_DOGICAPIXEL, int(12*GAME_SCREEN_RATIO[0]))
+FONT_DOGICAPIXEL10,_ = pme.create_font_from_file(PATH_FONT_DOGICAPIXEL, int(10*GAME_SCREEN_RATIO[0]))
 
 # Colors
 COLOR_WHITE = (255, 255, 255)

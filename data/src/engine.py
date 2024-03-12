@@ -5,6 +5,17 @@ import sys
 
 E_ONLY_FULLSCREEN = -2147483648
 E_FULLSCREEN_SCALED = -2147483136
+MOUSE_BUTTON_LEFT = 0
+MOUSE_BUTTON_RIGHT = 2
+MOUSE_BUTTON_MIDDLE = 1
+
+class Position():
+    x = 0
+    y = 0
+
+    def __init__(self, x: int, y: int) -> None:
+        self.x = x
+        self.y = y
 
 class Engine():
     """
@@ -35,7 +46,7 @@ class Engine():
 
 
     # Engine Base Functions
-    def create_screen(self, width:int, height:int, flags:int=0) -> pyg.Surface:
+    def create_window(self, width:int, height:int, flags:int=0) -> pyg.Surface:
         """
         Create the screen object, and return it
 
@@ -64,7 +75,7 @@ class Engine():
         """
         return pyg.event.get()
     
-    def create_font(self, font:str, size:int,bold:bool=False, italic:bool=False) -> list[pyg.font.FontType, int]:
+    def create_font(self, font_name:str, font_size:int, is_bold:bool=False, is_italic:bool=False) -> list[pyg.font.FontType, int]:
         """
         Create a SysFont object, and add to array
 
@@ -76,7 +87,7 @@ class Engine():
         Returns:
             list[pyg.font.Font, int]: The font object and its index
         """
-        f = pyg.font.SysFont(font, size, bold, italic)
+        f = pyg.font.SysFont(font_name, font_size, is_bold, is_italic)
         if not (f in self.fonts):
             print('[Engine] Font created')
             self.fonts.append(f)
@@ -86,7 +97,7 @@ class Engine():
             return self.fonts[font_index], font_index
         return f,self.fonts.index(f)
     
-    def create_font2(self, font_file:str, size:int) -> list[pyg.font.FontType, int]:
+    def create_font_from_file(self, file_path:str, font_size:int) -> list[pyg.font.FontType, int]:
         """
         Create a Font object, and add to array
 
@@ -96,7 +107,7 @@ class Engine():
         Returns:
             list[pyg.font.Font, int]: The font object and its index
         """
-        f = pyg.font.Font(font_file, size)
+        f = pyg.font.Font(file_path, font_size)
         if not (f in self.fonts):
             print('[Engine] Font created')
             self.fonts.append(f)
@@ -128,7 +139,7 @@ class Engine():
         """
         pyg.display.update()
     
-    def screen_set_title(self, title:str):
+    def set_window_title(self, title:str):
         """
         Set the title of the screen
 
@@ -139,7 +150,7 @@ class Engine():
         """
         pyg.display.set_caption(title)
 
-    def quit(self):
+    def destroy_window(self):
         """
         Quit the game
 
@@ -150,7 +161,109 @@ class Engine():
         """
         pyg.quit()
         sys.exit()
+
+    def debug_draw_lines_for_rectangular_shape(self, surface: pyg.Surface, rectangle: pyg.Rect):
+        r = rectangle
+        pyg.draw.line(surface, (255, 0, 0), (r.x, r.y), (r.x + r.width - 1, r.y))
+        pyg.draw.line(surface, (255, 0, 0), (r.x, r.y + r.height - 1), (r.x + r.width - 1, r.y + r.height - 1))
+        pyg.draw.line(surface, (255, 0, 0), (r.x, r.y), (r.x, r.y + r.height - 1))
+        pyg.draw.line(surface, (255, 0, 0), (r.x + r.width - 1, r.y), (r.x + r.width - 1, r.y + r.height - 1))
+        
+    def parse_ini(self, file_path: str) -> dict:
+        result = {}
+        current_section = None
+        with open(file_path, 'r') as file:
+            for line in file:
+                line = line.strip()
+
+                if not line or line.startswith(";"):
+                    continue
+
+                if line.startswith("[") and line.endswith("]"):
+                    current_section = line[1:-1]
+                    result[current_section] = {}
+                    continue
+
+                if current_section != None:
+                    key, value = line.split("=")           
+                    key = key.strip()
+                    value = value.strip()
+                    result[current_section][key] = value
+        
+        return result
+
+    def ini_get_boolean(self, dictionary: dict, section: str, key: str):
+        result = False
+
+        value = dictionary[section][key]
+
+        if value.lower() == "true":
+            result = True
+        elif value.lower() == "false":
+            result = False
+        else:
+            raise ValueError("the value is not 'true' or 'false'")        
+
+        return result
     
+    def ini_get_integer(self, dictionary: dict, section: str, key: str):
+        result = 0
+
+        value = dictionary[section][key]
+
+        result = int(value)
+
+        return result
+
+    def ini_get_string(self, dictionary: dict, section: str, key: str):
+        result = ""
+
+        result = dictionary[section][key]
+        result = result[1:-1]
+
+        return result
+    
+    def hot_load_game_config(self, game_config):
+        game_config.dictionary = self.parse_ini("./data/config.ini")
+        game_config.game_title_x = self.ini_get_integer(game_config.dictionary, "GUI", "game_title_x")
+        game_config.game_title_y = self.ini_get_integer(game_config.dictionary, "GUI", "game_title_y")
+
+        game_config.play_button_x = self.ini_get_integer(game_config.dictionary, "GUI", "play_button_x")
+        game_config.play_button_y = self.ini_get_integer(game_config.dictionary, "GUI", "play_button_y")
+        game_config.settings_button_x = self.ini_get_integer(game_config.dictionary, "GUI", "settings_button_x")
+        game_config.settings_button_y = self.ini_get_integer(game_config.dictionary, "GUI", "settings_button_y")
+        game_config.quit_button_x = self.ini_get_integer(game_config.dictionary, "GUI", "quit_button_x")
+        game_config.quit_button_y = self.ini_get_integer(game_config.dictionary, "GUI", "quit_button_y")
+
+        game_config.settings_x = self.ini_get_integer(game_config.dictionary, "GUI", "settings_x")
+        game_config.settings_y = self.ini_get_integer(game_config.dictionary, "GUI", "settings_y")
+        game_config.volume_x = self.ini_get_integer(game_config.dictionary, "GUI", "volume_x")
+        game_config.volume_y = self.ini_get_integer(game_config.dictionary, "GUI", "volume_y")
+        game_config.slider_x = self.ini_get_integer(game_config.dictionary, "GUI", "slider_x")
+        game_config.slider_y = self.ini_get_integer(game_config.dictionary, "GUI", "slider_y")
+        #game_config.slider_circle_x = self.ini_get_integer(game_config.dictionary, "GUI", "slider_circle_x")
+        #game_config.slider_circle_y = self.ini_get_integer(game_config.dictionary, "GUI", "slider_circle_y")
+        game_config.screen_size_x = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_x")
+        game_config.screen_size_y = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_y")
+        #game_config.screen_size_left_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_left_arrow_x")
+        #game_config.screen_size_left_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_left_arrow_y")
+        game_config.window_dimension_x = self.ini_get_integer(game_config.dictionary, "GUI", "window_dimension_x")
+        game_config.window_dimension_y = self.ini_get_integer(game_config.dictionary, "GUI", "window_dimension_y")
+        #game_config.screen_size_right_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_right_arrow_x")
+        #game_config.screen_size_right_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_right_arrow_y")
+        game_config.fps_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_x")
+        game_config.fps_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_y")
+        #game_config.fps_left_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_left_arrow_x")
+        #game_config.fps_left_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_left_arrow_y")
+        #game_config.fps_number_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_number_x")
+        #game_config.fps_number_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_number_y")
+        #game_config.fps_right_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_right_arrow_x")
+        #game_config.fps_right_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_right_arrow_y")
+        game_config.show_fps_x = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_x")
+        game_config.show_fps_y = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_y")
+        game_config.show_fps_checkbox_x = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_checkbox_x")
+        game_config.show_fps_checkbox_y = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_checkbox_y")
+
     # Draw Functions
     def draw_text(self,x:int,y:int, text:str, font:int or pyg.font.FontType, color:tuple[int,int,int], bg_color:tuple[int,int,int]=None, surface:pyg.Surface=None)-> Rect: # type: ignore
         """
@@ -176,6 +289,9 @@ class Engine():
             surf = surface.blit(text_render, (x, y))
         else:
             surf:pyg.rect.RectType = self.screen.blit(text_render, (x, y))
+                
+        self.debug_draw_lines_for_rectangular_shape(self.screen, surf)
+        
         return surf
     
     def draw_rect(self,x:int,y:int, color:tuple[int,int,int,],size:tuple[int,int],border_width:int=0,border_color:tuple[int,int,int,]=None,surface:pyg.Surface=None) -> Rect: # type: ignore
@@ -236,13 +352,11 @@ class Engine():
         Returns:
             circle surface(Rect): The rect of circle surface
         """
-        if surface:
-            surf = surface
-        else:
-            surf = self.screen
+        if surface == None:
+            surface = self.screen
 
-        c = pyg.draw.circle(surf, color, (x, y), radius)
-        return c
+        result = pyg.draw.circle(surface, color, (x, y), radius)
+        return result
 
     def draw_button(self,x:int,y:int,text:str, font:int or pyg.font.FontType, color:tuple[int,int,int], bg_color:tuple[int,int,int], surface:pyg.Surface=None) -> bool: # type: ignore
         """
@@ -259,14 +373,15 @@ class Engine():
         Returns:
             bool: The button state
         """
+        result = False
+
         re:pyg.rect.RectType = self.draw_text(x, y, text, font, color, bg_color, surface)
         if self.is_mouse_hover(re):
-            if self.mouse_pressed(0):
-                pyg.time.delay(self.button_click_delay)
-                return True
-            else:
-                return False
-        return False
+            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+                pyg.time.delay(self.button_click_delay) #@HACK
+                result = True
+        
+        return result
 
     def draw_select(self, x:int, y:int, font:int or pyg.font.FontType, colors:list[tuple[int,int,int]],selectList:list[any,],index:int, surface:pyg.Surface=None) -> int: # type: ignore
         """
@@ -294,10 +409,10 @@ class Engine():
 
         if backBtn:
             index -= 1
-            pyg.time.delay(self.select_click_delay)
+            pyg.time.delay(self.select_click_delay) #@HACK
         if nextBtn:
             index += 1
-            pyg.time.delay(self.select_click_delay)
+            pyg.time.delay(self.select_click_delay) #@HACK
         if index > len(selectList)-1:
             index = 0
         if index < 0:
@@ -311,67 +426,51 @@ class Engine():
         w,h = font.size(f'{text}') # Width & HEight
         bw = w//4
 
-        m_pos = self.mouse_pos()
+        m_pos = self.get_mouse_position()
 
         ColorSelect = lambda: colors[1] if checked else colors[2]
 
         b2:pyg.rect.RectType = self.draw_text(x+bw+5,y,text,font,ColorSelect(),surface)
 
         b1 = pyg.draw.rect(surface or self.screen,colors[0],(x,y,bw,h))
+        r = 0
         if checked:
-            pyg.draw.rect(surface or self.screen,colors[1],(x+2,y+2,bw-4,h-4))
+            r = pyg.draw.rect(surface or self.screen,colors[1],(x+2,y+2,bw-4,h-4))
             
-        if b1.collidepoint(m_pos) or b2.collidepoint(m_pos):
-            if self.mouse_pressed(0):
+        if b1.collidepoint(m_pos.x, m_pos.y) or b2.collidepoint(m_pos.x, m_pos.y):
+            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
                 checked = not checked
-                pyg.time.delay(self.select_click_delay)
+                pyg.time.delay(self.select_click_delay) #@HACK
 
-        
+        self.debug_draw_lines_for_rectangular_shape(self.screen, b1)
+        if type(r) == pyg.Rect:
+            self.debug_draw_lines_for_rectangular_shape(self.screen, r)
 
         return checked
-
-    def draw_slider(self, x:int, y:int, width:int, colors:list[tuple[int,int,int]],curPosX:int, surface:pyg.Surface=None,detail:bool=False) -> tuple[int, float]:
-        """
-        Draw a slider and return the value and percentage
-
-        Parameters:
-            x (int): The x pos
-            y (int): The y pos
-            width (int): The width
-            colors (list[tuple[int,int,int]]): The colors
-            maxValue (int): The max value
-            surface (pyg.Surface): The surface
-        Returns:
-            tuple[int, float]: The value and percentage
-        """
-        if not curPosX:
-            curPosX = x
-        m_pos = self.mouse_pos()
-        MaxX = x + width
-        percentage = curPosX/ MaxX
-        if percentage < 0:
-            percentage = 0
-        if percentage > 1:
-            percentage = 1
-
-        # Background
-        self.draw_rect(x,y,colors[0],(width,self.slider_height),surface=surface)
-
-        # Detail
-        if detail:
-            pyg.draw.line(surface or self.screen,colors[2],(x+5,y+(self.slider_height//2)),((x+width)-5,y+(self.slider_height//2)),2)
-
-        b = self.draw_circle(curPosX,y+(self.slider_height//2),colors[1],5,surface=surface)
-        if b.collidepoint(m_pos):
-            if self.mouse_pressed(0):
-                curPosX = m_pos[0]
-                if curPosX < x:
-                    curPosX = x
-                if curPosX > MaxX:
-                    curPosX = MaxX
+    
+    def draw_slider(self, x:int, y:int, width:int, colors:list[tuple[int,int,int]],curPosX:int, Slider_VolumePercentage, surface:pyg.Surface=None, detail:bool=False) -> tuple[int, float]:
+        slider_percentage = Slider_VolumePercentage
+        slider_x = curPosX
         
-        return curPosX, percentage
+        background_rectangle = pyg.draw.rect(self.screen, colors[0], pyg.Rect(x, y, width, self.slider_height + 8))
+        
+        circle_radius = 5        
+        circle_y = y + circle_radius
+        circle_color = colors[1]
+        circle_x = ((Slider_VolumePercentage * width) - 1) + x #curPosX    
+        circle_rectangle = self.draw_circle(circle_x, circle_y, circle_color, circle_radius, surface=surface)
 
+        mouse_position = self.get_mouse_position()
+        if background_rectangle.collidepoint(mouse_position.x, mouse_position.y):
+            if self.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+                slider_percentage = ((mouse_position.x - x) + 1) / width
+                slider_x = mouse_position.x
+
+        self.debug_draw_lines_for_rectangular_shape(self.screen, background_rectangle)
+        self.debug_draw_lines_for_rectangular_shape(self.screen, circle_rectangle)
+
+        return slider_x, slider_percentage
+    
     # Logic Functions
     def keys_pressed(self) -> pyg.key.ScancodeWrapper:
         """
@@ -407,10 +506,10 @@ class Engine():
         if type(surface) == pyg.Surface:
             surface:pyg.rect.RectType = surface.get_rect()
         
-        m_pos = self.mouse_pos()
-        return surface.collidepoint(m_pos[0], m_pos[1])
+        m_pos = self.get_mouse_position()
+        return surface.collidepoint(m_pos.x, m_pos.y)
 
-    def mouse_pressed(self, button:int, mouse_type:int=3) -> bool:
+    def is_mouse_button_pressed(self, button:int, mouse_type:int=3) -> bool:
         """
         Check if the mouse button is pressed
 
@@ -422,7 +521,7 @@ class Engine():
         """
         return pyg.mouse.get_pressed(mouse_type)[button]
 
-    def mouse_pos(self) -> tuple[int,int]:
+    def get_mouse_position(self) -> Position:
         """
         Get the mouse pos
 
@@ -431,7 +530,10 @@ class Engine():
         Returns:
             tuple[int,int]: The mouse pos
         """
-        return pyg.mouse.get_pos()
+        position_tuple = pyg.mouse.get_pos()
+        result = Position(position_tuple[0], position_tuple[1])
+        
+        return result
 
     # Engine Need Functions
     def load_image(self, image_path:str) -> pyg.surface:

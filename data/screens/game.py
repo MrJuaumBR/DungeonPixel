@@ -15,7 +15,7 @@ def game(save:Save):
 
     while run:
         for ev in pme.get_events():
-            if ev.type == QUIT: pme.quit()
+            if ev.type == QUIT: pme.destroy_window()
             elif ev.type == KEYDOWN:
                 if ev.key == K_ESCAPE: run = False
 

@@ -11,7 +11,11 @@ def game(save:Save):
 
     Camera:CameraGroup = CameraGroup(player=player)
 
-    map:dict = read_map('./data/screens/gameSrc/map')
+    # change the file name to "map.txt" because vscode is going nuts thinking it is a javascript file. this var is for stopping copy pasta everywhere
+    map_path = "./data/screens/gameSrc/map.txt" 
+    # every file has info about it and we are going to need to know what was the last write to this file to later compare againt another one. its for the hotload of the map
+    map_last_write_time = os.path.getmtime(map_path) 
+    map:dict = read_map(map_path)
     map_tiles = convert_map_code(map)
     map_size = get_map_size(map)
     
@@ -29,6 +33,27 @@ def game(save:Save):
             if ev.type == QUIT: pme.quit()
             elif ev.type == KEYDOWN:
                 if ev.key == K_ESCAPE: run = False
+
+        # here we get the current last write time (it can be either new or the same as before) of the map file to later compare against last write time (old)
+        map_current_last_write_time = os.path.getmtime(map_path) 
+        # this tells us if the file has changed on disk
+        if map_last_write_time != map_current_last_write_time: 
+            map:dict = read_map(map_path)
+            map_tiles = convert_map_code(map)
+            map_size = get_map_size(map)
+            
+            # loop and remove all the sprites but not the player because he is not in the map
+            for sprite in Camera.sprites():
+                if sprite is not player:
+                    Camera.remove(sprite)
+
+            # Load Map
+            for y,line in enumerate(map_tiles):
+                for x,tile in enumerate(line):
+                    if callable(tile):
+                        Camera.add(tile(pos=((x+1)*32,(y+1)*32)))
+
+            map_last_write_time = os.path.getmtime(map_path) # here we update last write time of the map file because it was just edited in disk. we update stuff because we need to remember for the next iteration, otherwise it will trigger this if statement always, in this case
 
         ShowFPS()
         Camera.update()

@@ -1,6 +1,6 @@
-import ini
-import canvas
-import engine
+import ini_ as ini
+import canvas_ as canvas
+import engine_ as engine
 
 import sys
 import os
@@ -23,26 +23,34 @@ class GameState:
     config_file: GameConfig
 
     def __init__(self) -> None:
-        pass
+        self.main_character = Entity()
+        self.main_character.position = engine.VectorInteger(0, 0)
+        self.main_character.velocity = engine.VectorInteger(0, 0)
+        self.main_character.canvas_render = CanvasRender()
+        self.main_character.canvas_render.rectangle = canvas.Rectangle(0, 0, 0, 0, canvas.Color(0.0, 0.0, 0.0, 0.0))
+        
+        self.static_entity = Entity()
+        self.static_entity.position = engine.VectorInteger(0, 0)
+        self.static_entity.velocity = engine.VectorInteger(0, 0)
+        self.static_entity.canvas_render = CanvasRender()
+        self.static_entity.canvas_render.rectangle = canvas.Rectangle(0, 0, 0, 0, canvas.Color(0.0, 0.0, 0.0, 0.0))
+
+        self.config_file = GameConfig()
 
 def main():
     result = 1
     ini_file_path = "./data/chosenbit/data/config.ini"
     ini_dictionary = ini.parse_file(ini_file_path)
-    #@TODO: when nesting classes I got the same ref for certain class in the class chain. so i'm creating the classes manually
+
     game_state = GameState()
-    game_state.config_file = GameConfig()
     game_state.config_file.last_write_time = os.path.getmtime(ini_file_path)
-    game_state.main_character = Entity()
-    game_state.main_character.canvas_render = CanvasRender()
     game_state.main_character.canvas_render.rectangle = canvas.Rectangle(100, 100, 100, 50, canvas.Color(1.0, 0.0, 0.0, 0.0))
     game_state.main_character.velocity = engine.VectorInteger(1, 1)
     game_state.main_character.position = engine.VectorInteger(0, 0)
-    game_state.static_entity = Entity()
-    game_state.static_entity.canvas_render = CanvasRender()
     game_state.static_entity.canvas_render.rectangle = canvas.Rectangle(300, 100, 100, 50, canvas.Color(1.0, 1.0, 0.0, 0.0))    
     game_state.static_entity.velocity = engine.VectorInteger(0, 0)
     game_state.static_entity.position = engine.VectorInteger(0, 0)
+
     #@TODO:Duplicate code
     ini_dictionary = ini.parse_file(ini_file_path)    
     game_state.static_entity.position.x = ini.read_integer(ini_dictionary, "GUI", "static_entity_x")
@@ -63,7 +71,9 @@ def main():
             ini_dictionary = ini.parse_file(ini_file_path)
             game_state.static_entity.position.x = ini.read_integer(ini_dictionary, "GUI", "static_entity_x")
             game_state.static_entity.position.y = ini.read_integer(ini_dictionary, "GUI", "static_entity_y")
+            
             canvas.set_canvas_title(canvas_state, ini.read_string(ini_dictionary, "GUI", "window_title"))
+            
             game_state.config_file.last_write_time = os.path.getmtime(ini_file_path)
 
         if canvas.is_key_down(message, "w"):
@@ -92,10 +102,12 @@ def main():
 
         canvas.draw_clear(canvas_state, canvas.Color(0.0, 0.0, 0.0, 0.0))
         canvas.draw_rectangle(canvas_state, main_character_rectangle)
+
         static_entity_rectangle = game_state.static_entity.canvas_render.rectangle
         static_entity_rectangle.x = game_state.static_entity.position.x
         static_entity_rectangle.y = game_state.static_entity.position.y
         canvas.draw_rectangle(canvas_state, static_entity_rectangle)
+
         canvas.swap_buffers(canvas_state)
 
     canvas.destroy_canvas(canvas_state)

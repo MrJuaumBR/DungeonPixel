@@ -441,33 +441,69 @@ class Engine():
             return self.fonts[font]
         else:
             return font
+
+class spritesheet():
+    active:bool = True
+    def __init__(self, path:str) -> None:
+        self.path = path
+        self.file_type = path.strip('.')[-1]
+        try:
+            self.sheet = pyg.image.load(path).convert()
+        except Exception as e:
+            print(f'[Engine - Spritesheet - Error] {e}')
+            self.active = False
+
+    def image_at(self, rectangle:tuple[int,int,int,int], colorkey=None) -> pyg.surface:
+        """
+        Loads image from x,y,x+offset,y+offset
+
+        Parameters:
+            rectangle (tuple[int,int,int,int]): The rectangle
+            colorkey (tuple[int,int,int]): The colorkey
+        Returns:
+            pyg.surface: The surface
+        """
+        if self.active:
+            rect = pyg.Rect(rectangle)
+            image = pyg.Surface(rect.size).convert()
+            image.blit(self.sheet,(0,0),rect)
+            if colorkey:
+                if colorkey == -1:
+                    colorkey = image.get_at((0,0))
+                image.set_colorkey(colorkey,pyg.RLEACCEL)
+            return image
+        else:
+            print(f'[Engine - Spritesheet - Info] Spritesheet({self.path}) not active')
+            return None
         
-class SelectMenu():
-    Buttons = []
-    Buttons_Actions = {}
-    Button_Fonts = 0
-    def __init__(self, engine:Engine,screen:pyg.Surface, buttons:list[tuple, ], Button_Fonts:int) -> None:
-        self.screen = screen
-        self.add_buttons(buttons)
-        self.Engine = engine
-        self.Button_Fonts = Button_Fonts
+    def images_at(self, rects:list[tuple[int,int,int,int]], colorkey=None) -> list[pyg.Surface,]:
+        """
+        Loads multiple images, supply a list of coordinates
 
-    def add_buttons(self, buttons:list[str,]):
-        for button in buttons:
-            self.add_button(button[0], button[1])
+        Parameters:
+            rects (list[tuple[int,int,int,int]]): The list of rectangles
+            colorkey (tuple[int,int,int]): The colorkey
+        Returns:
+            list[pyg.surface]: The list of surfaces
+        """
+        return [self.image_at(rect, colorkey) for rect in rects]
+            
+    
+    def load_strip(self, rect:tuple[int,int,int,int], image_count:int, colorkey=None) -> list[pyg.Surface,]:
+        """
+        Loads a strip of images and return them as list
 
-    def add_button(self, name:str, function):
-        self.Buttons.append(name)
-        self.Buttons_Actions[name] = function
+        Parameters:
+            rect (tuple[int,int,int,int]): The rectangle
+            image_count (int): The image count
+            colorkey (tuple[int,int,int]): The colorkey
+        Returns:
+            list[pyg.surface]: The list of surfaces
+        """
+        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
+                for x in range(image_count)]
+        return self.images_at(tups, colorkey)
 
-    def update(self):
-        pass
-
-    def draw(self):
-        for x,button in enumerate(self.Buttons):
-            font_height = self.Engine._convert_font(self.Button_Fonts).size(button)[1]
-            font_height = font_height + 64 * (x+1)# Font Height + Start Y * Index
-            self.Engine.draw_button(64,font_height, button, self.Button_Fonts, (255,255,255), (0,0,0), self.screen)
 
 class Button():
     engine:Engine

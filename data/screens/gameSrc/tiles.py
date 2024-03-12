@@ -39,6 +39,9 @@ class Wall(TileBase):
     image:pyg.Surface
     def __init__(self, pos:tuple) -> None:
         super().__init__(pos)
+        ss = spritesheet('./data/assets/textures/tiles.png')
+        self.image = ss.image_at((0,0,32,32),-1)
+
 
     def update(self,player:G_Player) -> None:
         pass

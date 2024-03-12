@@ -41,7 +41,7 @@ if len(db.get_all('config')) == 0: # Has no Config
     
 CONFIG:dict = db.get_value('config','data',0)
 
-GAME_RES_LIST:list[tuple[int,int],] = [(640,480),(800,600),(1024,768)]
+GAME_RES_LIST:list[tuple[int,int],] = [(640,480),(800,600),(1024,768),(1920,1080)]
 GAME_FPS_LIST:list[int,] = [30,60,90,120]
 
 CFG_RES:tuple[int,int] = GAME_RES_LIST[CONFIG['SCREEN_SIZE']]

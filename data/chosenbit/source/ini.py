@@ -110,13 +110,15 @@ def _read_expression(dictionary: dict, section: str, key: str) -> str:
 
     expression = dictionary[section][key]      
     tokens = _tokenize(expression)
-    result = _evaluate(dictionary, section, key, tokens)
     
+    result = _evaluate(dictionary, section, key, tokens)    
     return result
 
 def read_string(dictionary: dict, section: str, key: str) -> str:
     result = dictionary[section][key]
-
+    result = result.strip()
+    result = result[1:-1]
+    
     return result
 
 def read_integer(dictionary: dict, section: str, key: str) -> int:

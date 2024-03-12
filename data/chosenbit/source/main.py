@@ -22,6 +22,9 @@ class GameState:
     static_entity: Entity
     config_file: GameConfig
 
+    def __init__(self) -> None:
+        pass
+
 def main():
     result = 1
     ini_file_path = "./data/chosenbit/data/config.ini"
@@ -46,7 +49,7 @@ def main():
     game_state.static_entity.position.y = ini.read_integer(ini_dictionary, "GUI", "static_entity_y")
 
     canvas_state = canvas.CanvasState
-    canvas.create_canvas(canvas_state, "My Window", 800, 600)
+    canvas.create_canvas(canvas_state, ini.read_string(ini_dictionary, "GUI", "window_title"), 800, 600)
     
     is_running = True
     message = canvas.Message
@@ -60,7 +63,7 @@ def main():
             ini_dictionary = ini.parse_file(ini_file_path)
             game_state.static_entity.position.x = ini.read_integer(ini_dictionary, "GUI", "static_entity_x")
             game_state.static_entity.position.y = ini.read_integer(ini_dictionary, "GUI", "static_entity_y")
-
+            canvas.set_canvas_title(canvas_state, ini.read_string(ini_dictionary, "GUI", "window_title"))
             game_state.config_file.last_write_time = os.path.getmtime(ini_file_path)
 
         if canvas.is_key_down(message, "w"):

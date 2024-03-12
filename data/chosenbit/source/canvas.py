@@ -43,14 +43,13 @@ class Rectangle:
 
     def _convert_to_pygame_rectangle(self) ->  pygame.Rect:
         result = pygame.rect.Rect(self.x, self.y, self.width, self.height)
-
         return result
 
 def create_canvas(canvas: CanvasState, title: str, width: int, height: int):
     result = False
 
-    if pygame.init()[1] > 0:
-        result
+    if (pygame.init()[1] > 0) or canvas.screen:
+        return result
 
     canvas.screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption(title)
@@ -86,6 +85,9 @@ def process_message(message: Message):
 
     return result
 
+def set_canvas_title(canvas: CanvasState, title: str) -> None:
+    pygame.display.set_caption(title)
+
 def is_key_down(message: Message, key: str):
     result = False
 
@@ -94,15 +96,15 @@ def is_key_down(message: Message, key: str):
 
     return result
 
-def swap_buffers(canvas: CanvasState):
+def swap_buffers(canvas: CanvasState) -> None:
     pygame.display.flip()
 
-def draw_clear(canvas: CanvasState, color: Color):
+def draw_clear(canvas: CanvasState, color: Color) -> None:
     screen = canvas.screen
     color = color._convert_to_pygame_color()
     screen.fill(color)
 
-def draw_rectangle(canvas: CanvasState, rectangle: Rectangle):
+def draw_rectangle(canvas: CanvasState, rectangle: Rectangle) -> None:
     screen = canvas.screen
     color = rectangle.color._convert_to_pygame_color()
     rectangle = rectangle._convert_to_pygame_rectangle()

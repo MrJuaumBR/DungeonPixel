@@ -1,6 +1,6 @@
 from ..config import *
 
-def settings(game_state):
+def settings(game_state, game_config):
     run = True
 
     #Slider_VolumePercentage = CONFIG['VOLUME'] or 0
@@ -10,31 +10,31 @@ def settings(game_state):
     Select_FPSIndex = CONFIG['FPS'] or 0
     CheckBx_SHOW_FPS = CONFIG['SHOW_FPS'] or False
     while run:
+        current_config_last_write_time = os.path.getmtime("./data/config.ini")
+        if game_config.last_write_time != current_config_last_write_time:
+            pme.hot_load_game_config(game_config)
+            game_config.last_write_time = os.path.getmtime("./data/config.ini")
+
         # Screen Title
-        pme.draw_text(32*GAME_SCREEN_RATIO[0],32*GAME_SCREEN_RATIO[1],'Settings', FONT_ANDALIA52, COLOR_WHITE)
+        pme.draw_text(game_config.settings_x,game_config.settings_y,'Settings', FONT_ANDALIA52, COLOR_WHITE)
 
         # Settings Buttons
             # volume
-        volume_surface = pme.draw_text(48*GAME_SCREEN_RATIO[0],96*GAME_SCREEN_RATIO[1],f'Volume: {int(game_state.Slider_VolumePercentage*100)}', FONT_DOGICAPIXEL28, COLOR_WHITE)
+        volume_surface = pme.draw_text(game_config.volume_x,game_config.volume_y,f'Volume: {int(game_state.Slider_VolumePercentage*100)}', FONT_DOGICAPIXEL28, COLOR_WHITE)
         #Slider_VolumePos, Slider_VolumePercentage = pme.draw_slider2(64*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1],250*GAME_SCREEN_RATIO[0],[(35,35,35),(100,190,125),(200,200,200)],Slider_VolumePos,detail=True)
-        slider_width = 193 #volume_surface.width + (volume_surface.width // 8)
-        slider_padding_x = (slider_width - volume_surface.width) // 2
-        slider_padding_y = 16
-        slider_x = 18 #volume_surface.x - slider_padding_x
-        slider_y = volume_surface.y + volume_surface.height + slider_padding_y
-        #@NOTE: if slider_x and slider_width are base on volume_surface.width then the slider will be buggy because it will vary based on the text width which is dynamic
-        game_state.Slider_VolumePos, game_state.Slider_VolumePercentage = pme.draw_slider(slider_x, slider_y, slider_width, [(35,35,35),(100,190,125),(200,200,200)],game_state.Slider_VolumePos,game_state.Slider_VolumePercentage, detail=True)
+        slider_width = 193 #volume_surface.width + (volume_surface.width // 8)        
+        game_state.Slider_VolumePos, game_state.Slider_VolumePercentage = pme.draw_slider(game_config.slider_x, game_config.slider_y, slider_width, [(35,35,35),(100,190,125),(200,200,200)],game_state.Slider_VolumePos,game_state.Slider_VolumePercentage, detail=True)
 
             # Screen size
-        pme.draw_text(48*GAME_SCREEN_RATIO[0],192*GAME_SCREEN_RATIO[1],f'Screen Size:', FONT_DOGICAPIXEL28, COLOR_WHITE)
-        Select_ScreenSizeIndex = pme.draw_select(200*GAME_SCREEN_RATIO[0],224*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],GAME_RES_LIST,Select_ScreenSizeIndex)
+        pme.draw_text(game_config.screen_size_x,game_config.screen_size_y,f'Screen Size:', FONT_DOGICAPIXEL28, COLOR_WHITE)
+        Select_ScreenSizeIndex = pme.draw_select(game_config.window_dimension_x,game_config.window_dimension_y,FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],GAME_RES_LIST,Select_ScreenSizeIndex)
 
             # FPS
-        pme.draw_text(48*GAME_SCREEN_RATIO[0],288*GAME_SCREEN_RATIO[1],f'FPS:', FONT_DOGICAPIXEL28, COLOR_WHITE)
-        Select_FPSIndex = pme.draw_select(64*GAME_SCREEN_RATIO[0],320*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],GAME_FPS_LIST,Select_FPSIndex)
+        pme.draw_text(game_config.fps_x,game_config.fps_y,f'FPS:', FONT_DOGICAPIXEL28, COLOR_WHITE)
+        Select_FPSIndex = pme.draw_select(game_config.show_fps_checkbox_x,game_config.show_fps_checkbox_y,FONT_DOGICAPIXEL28,[(35,35,35),(100,190,125),(200,200,200)],GAME_FPS_LIST,Select_FPSIndex)
 
             # SHOW_FPS
-        CheckBx_SHOW_FPS = pme.draw_checkbox(64*GAME_SCREEN_RATIO[0],416*GAME_SCREEN_RATIO[1],FONT_DOGICAPIXEL18,'Show Fps',CheckBx_SHOW_FPS,[(35,35,35),(100,190,125),(200,200,200)])
+        CheckBx_SHOW_FPS = pme.draw_checkbox(game_config.show_fps_x,game_config.show_fps_y,FONT_DOGICAPIXEL18,'Show Fps',CheckBx_SHOW_FPS,[(35,35,35),(100,190,125),(200,200,200)])
 
         
         for ev in pme.get_events(): 

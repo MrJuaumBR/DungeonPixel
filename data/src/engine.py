@@ -168,7 +168,102 @@ class Engine():
         pyg.draw.line(surface, (255, 0, 0), (r.x, r.y + r.height - 1), (r.x + r.width - 1, r.y + r.height - 1))
         pyg.draw.line(surface, (255, 0, 0), (r.x, r.y), (r.x, r.y + r.height - 1))
         pyg.draw.line(surface, (255, 0, 0), (r.x + r.width - 1, r.y), (r.x + r.width - 1, r.y + r.height - 1))
+        
+    def parse_ini(self, file_path: str) -> dict:
+        result = {}
+        current_section = None
+        with open(file_path, 'r') as file:
+            for line in file:
+                line = line.strip()
+
+                if not line or line.startswith(";"):
+                    continue
+
+                if line.startswith("[") and line.endswith("]"):
+                    current_section = line[1:-1]
+                    result[current_section] = {}
+                    continue
+
+                if current_section != None:
+                    key, value = line.split("=")           
+                    key = key.strip()
+                    value = value.strip()
+                    result[current_section][key] = value
+        
+        return result
+
+    def ini_get_boolean(self, dictionary: dict, section: str, key: str):
+        result = False
+
+        value = dictionary[section][key]
+
+        if value.lower() == "true":
+            result = True
+        elif value.lower() == "false":
+            result = False
+        else:
+            raise ValueError("the value is not 'true' or 'false'")        
+
+        return result
     
+    def ini_get_integer(self, dictionary: dict, section: str, key: str):
+        result = 0
+
+        value = dictionary[section][key]
+
+        result = int(value)
+
+        return result
+
+    def ini_get_string(self, dictionary: dict, section: str, key: str):
+        result = ""
+
+        result = dictionary[section][key]
+        result = result[1:-1]
+
+        return result
+    
+    def hot_load_game_config(self, game_config):
+        game_config.dictionary = self.parse_ini("./data/config.ini")
+        game_config.game_title_x = self.ini_get_integer(game_config.dictionary, "GUI", "game_title_x")
+        game_config.game_title_y = self.ini_get_integer(game_config.dictionary, "GUI", "game_title_y")
+
+        game_config.play_button_x = self.ini_get_integer(game_config.dictionary, "GUI", "play_button_x")
+        game_config.play_button_y = self.ini_get_integer(game_config.dictionary, "GUI", "play_button_y")
+        game_config.settings_button_x = self.ini_get_integer(game_config.dictionary, "GUI", "settings_button_x")
+        game_config.settings_button_y = self.ini_get_integer(game_config.dictionary, "GUI", "settings_button_y")
+        game_config.quit_button_x = self.ini_get_integer(game_config.dictionary, "GUI", "quit_button_x")
+        game_config.quit_button_y = self.ini_get_integer(game_config.dictionary, "GUI", "quit_button_y")
+
+        game_config.settings_x = self.ini_get_integer(game_config.dictionary, "GUI", "settings_x")
+        game_config.settings_y = self.ini_get_integer(game_config.dictionary, "GUI", "settings_y")
+        game_config.volume_x = self.ini_get_integer(game_config.dictionary, "GUI", "volume_x")
+        game_config.volume_y = self.ini_get_integer(game_config.dictionary, "GUI", "volume_y")
+        game_config.slider_x = self.ini_get_integer(game_config.dictionary, "GUI", "slider_x")
+        game_config.slider_y = self.ini_get_integer(game_config.dictionary, "GUI", "slider_y")
+        #game_config.slider_circle_x = self.ini_get_integer(game_config.dictionary, "GUI", "slider_circle_x")
+        #game_config.slider_circle_y = self.ini_get_integer(game_config.dictionary, "GUI", "slider_circle_y")
+        game_config.screen_size_x = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_x")
+        game_config.screen_size_y = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_y")
+        #game_config.screen_size_left_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_left_arrow_x")
+        #game_config.screen_size_left_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_left_arrow_y")
+        game_config.window_dimension_x = self.ini_get_integer(game_config.dictionary, "GUI", "window_dimension_x")
+        game_config.window_dimension_y = self.ini_get_integer(game_config.dictionary, "GUI", "window_dimension_y")
+        #game_config.screen_size_right_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_right_arrow_x")
+        #game_config.screen_size_right_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "screen_size_right_arrow_y")
+        game_config.fps_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_x")
+        game_config.fps_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_y")
+        #game_config.fps_left_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_left_arrow_x")
+        #game_config.fps_left_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_left_arrow_y")
+        #game_config.fps_number_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_number_x")
+        #game_config.fps_number_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_number_y")
+        #game_config.fps_right_arrow_x = self.ini_get_integer(game_config.dictionary, "GUI", "fps_right_arrow_x")
+        #game_config.fps_right_arrow_y = self.ini_get_integer(game_config.dictionary, "GUI", "fps_right_arrow_y")
+        game_config.show_fps_x = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_x")
+        game_config.show_fps_y = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_y")
+        game_config.show_fps_checkbox_x = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_checkbox_x")
+        game_config.show_fps_checkbox_y = self.ini_get_integer(game_config.dictionary, "GUI", "show_fps_checkbox_y")
+
     # Draw Functions
     def draw_text(self,x:int,y:int, text:str, font:int or pyg.font.FontType, color:tuple[int,int,int], bg_color:tuple[int,int,int]=None, surface:pyg.Surface=None)-> Rect: # type: ignore
         """

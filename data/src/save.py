@@ -19,6 +19,7 @@ class player(pyg.sprite.Sprite):
 
     speed:int = 3
     drag:float = 0.65
+    drag_coeficient = 1.0 / 100.0
     max_speed: int = 5
     position_vec:pyg.math.Vector2 = pyg.math.Vector2()
 
@@ -102,22 +103,11 @@ class player(pyg.sprite.Sprite):
             self.rect.y += self.position_vec.y
 
     def _manager_drag(self):
-        # Get Vectors to only > 1
-        # Set Vectors to only positive values, if negative, set to positive too
-        X_Vec = round(abs(self.position_vec.x),3)
-        Y_Vec = round(abs(self.position_vec.y),3)
+        drag_force_x = -self.drag_coeficient * self.position_vec.x
+        drag_force_y = -self.drag_coeficient * self.position_vec.y
 
-        # Apply Drag
-        # If X Vector > 0.02 Then Apply Drag Else Set X Vector to 0
-        if X_Vec > 0.02:
-            self.position_vec.x *= self.drag
-        else:
-            self.position_vec.x = 0
-        # If Y Vector > 0.02 Then Apply Drag Else Set Y Vector to 0
-        if Y_Vec > 0.02:
-            self.position_vec.y *= self.drag
-        else:
-            self.position_vec.y = 0
+        self.position_vec.x += drag_force_x
+        self.position_vec.y += drag_force_y
 
     def _handle_x_collision(self,sprites:list[pyg.sprite.Sprite,]) -> list:
         x_collision = []

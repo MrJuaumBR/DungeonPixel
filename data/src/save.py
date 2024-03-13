@@ -177,14 +177,36 @@ class player(pyg.sprite.Sprite):
 
     def _manager_collision(self):
         if self.Camera: # If Camera Group Has Defined
-            s = self.Camera.sprites()
-            x_col = self._handle_x_collision(s)
-            y_col = self._handle_y_collision(s)
+            sprites = self.Camera.sprites()
 
-            if len(x_col) > 0:
-                self._resolve_x_collision(x_col)
-            if len(y_col) > 0:
-                self._resolve_y_collision(y_col)
+            for sprite in sprites:
+                if sprite is not self.Camera.player:
+                    if self.rect.colliderect(sprite.rect):
+                        a = self.rect
+                        b = sprite.rect
+                        # if x_overlap > 0 then there is an overlap in the x-axis
+                        x_overlap = min(a.right, b.right) - max(a.x, b.x)
+                        # if y_overlap > 0 then there is an overlap in the y-axis
+                        y_overlap = min(a.bottom, b.bottom) - max(a.y, b.y)
+
+                        # overlapd in the x-axis
+                        if x_overlap < y_overlap:
+                            if a.x < b.x: # collision from right to left?
+                                a.x -= x_overlap                                
+                            else: # collision from left to right?
+                                a.x += x_overlap
+
+                            if self.position_vec.x > 0:
+                                self.position_vec.x = 0
+                        # overlapd in the y-axis
+                        else:
+                            if a.y < b.y: # collsion from bottom to top?
+                                a.y -= y_overlap
+                            else: # collision from top to bottom?
+                                a.y += y_overlap 
+                            
+                            if self.position_vec.y > 0:
+                                self.position_vec.y = 0
         else: # If Camera Group Has Not Defined
             if len(self.groups()) > 0: # If Player Has Groups
                 self.Camera = self.groups()[0] # Set Camera Group

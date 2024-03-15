@@ -3,6 +3,7 @@ import pygame as pyg
 import os
 import sys
 import ctypes
+import platform
 
 MoveWindowTo = ctypes.windll.user32.MoveWindow
 MoveWindowTo.argtypes = [ctypes.wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.wintypes.BOOL]
@@ -42,15 +43,18 @@ class Engine():
         # Call it after pygame.display.set_mode()
         window_info = pyg.display.get_wm_info()
         if "window" in window_info:
-            window = window_info["window"]
-            window_rect = ctypes.wintypes.RECT()
-            ctypes.windll.user32.GetWindowRect(window, ctypes.byref(window_rect))
-            client_rect = ctypes.wintypes.RECT()
-            ctypes.windll.user32.GetClientRect(window, ctypes.byref(client_rect))
-            window_width = window_rect.right - window_rect.left
-            client_width = client_rect.right - client_rect.left
-            border_width = (window_width - client_width) // 2
-            MoveWindowTo(window, x - border_width, y, 800, 600, True)
+            if platform.system() == "Windows":
+                window = window_info["window"]
+                window_rect = ctypes.wintypes.RECT()
+                ctypes.windll.user32.GetWindowRect(window, ctypes.byref(window_rect))
+                client_rect = ctypes.wintypes.RECT()
+                ctypes.windll.user32.GetClientRect(window, ctypes.byref(client_rect))
+                window_width = window_rect.right - window_rect.left
+                client_width = client_rect.right - client_rect.left
+                border_width = (window_width - client_width) // 2
+                MoveWindowTo(window, x - border_width, y, 800, 600, True)
+            else:
+                raise NotImplementedError("Platform is not supported yet")
         else:
             print("Could not set the window position")
 

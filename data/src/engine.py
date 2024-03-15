@@ -2,6 +2,11 @@ from pygame.locals import *
 import pygame as pyg
 import os
 import sys
+import ctypes
+
+MoveWindowTo = ctypes.windll.user32.MoveWindow
+MoveWindowTo.argtypes = [ctypes.wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.wintypes.BOOL]
+MoveWindowTo.restype = ctypes.wintypes.BOOL
 
 E_ONLY_FULLSCREEN = -2147483648
 E_FULLSCREEN_SCALED = -2147483136
@@ -33,6 +38,39 @@ class Engine():
             self.screen = screen
         pyg.init()
 
+    def set_window_position(self, x: int, y: int):
+        # Call it after pygame.display.set_mode()
+        window_info = pyg.display.get_wm_info()
+        if "window" in window_info:
+            window = window_info["window"]
+            window_rect = ctypes.wintypes.RECT()
+            ctypes.windll.user32.GetWindowRect(window, ctypes.byref(window_rect))
+            client_rect = ctypes.wintypes.RECT()
+            ctypes.windll.user32.GetClientRect(window, ctypes.byref(client_rect))
+            window_width = window_rect.right - window_rect.left
+            client_width = client_rect.right - client_rect.left
+            border_width = (window_width - client_width) // 2
+            MoveWindowTo(window, x - border_width, y, 800, 600, True)
+        else:
+            print("Could not set the window position")
+
+    def get_title_bar_height(self) -> int:
+        result = 0
+
+        window_info = pyg.display.get_wm_info()
+        if "window" in window_info:
+            window = window_info["window"]
+            window_rect = ctypes.wintypes.RECT()
+            ctypes.windll.user32.GetWindowRect(window, ctypes.byref(window_rect))
+            client_rect = ctypes.wintypes.RECT()
+            ctypes.windll.user32.GetClientRect(window, ctypes.byref(client_rect))
+            window_height = window_rect.bottom - window_rect.top
+            client_height = client_rect.bottom - client_rect.top
+            result = (window_height - client_height) // 2
+        else:
+            print("Could not get the title bar position")
+
+        return result
 
     # Engine Base Functions
     def create_screen(self, width:int, height:int, flags:int=0) -> pyg.Surface:
@@ -51,6 +89,9 @@ class Engine():
             flags = E_FULLSCREEN_SCALED
         
         self.screen = pyg.display.set_mode((width, height), flags)
+        window_width = pyg.display.get_desktop_sizes()[0][0]
+        window_height = pyg.display.get_desktop_sizes()[0][1]
+        self.set_window_position((window_width - width) // 2, ((window_height - height) // 2) - self.get_title_bar_height())
         return self.screen
     
     def get_events(self) -> list[pyg.event.Event,]:

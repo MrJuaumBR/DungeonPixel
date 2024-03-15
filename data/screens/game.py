@@ -15,7 +15,7 @@ def map_hotload(map_last_write_time:float,map_path:str,Camera:CameraGroup) -> fl
         
         # loop and remove all the sprites but not the player because he is not in the map
         for sprite in Camera.sprites():
-            if sprite is not player:
+            if sprite is not Camera.player:
                 Camera.remove(sprite)
 
         # Load Map

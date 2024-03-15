@@ -19,6 +19,7 @@ class player(pyg.sprite.Sprite):
 
     speed:int = 3
     drag:float = 0.65
+    drag_coeficient = 1.0 / 100.0
     max_speed: int = 5
     position_vec:pyg.math.Vector2 = pyg.math.Vector2()
 
@@ -36,7 +37,9 @@ class player(pyg.sprite.Sprite):
         super().__init__(*groups)
         self.SaveClass = SaveClass
         try:
-            self.Camera = self.groups()[0]
+            #self.Camera = self.groups()[0]
+            if len(self.groups()) > 0: # If Player Has Groups
+                self.Camera = self.groups()[0] # Set Camera Group
         except Exception as e:
             print(f'[Save - Player - Init] {e}')
             pass
@@ -100,22 +103,11 @@ class player(pyg.sprite.Sprite):
             self.rect.y += self.position_vec.y
 
     def _manager_drag(self):
-        # Get Vectors to only > 1
-        # Set Vectors to only positive values, if negative, set to positive too
-        X_Vec = round(abs(self.position_vec.x),3)
-        Y_Vec = round(abs(self.position_vec.y),3)
+        drag_force_x = -self.drag_coeficient * self.position_vec.x
+        drag_force_y = -self.drag_coeficient * self.position_vec.y
 
-        # Apply Drag
-        # If X Vector > 0.02 Then Apply Drag Else Set X Vector to 0
-        if X_Vec > 0.02:
-            self.position_vec.x *= self.drag
-        else:
-            self.position_vec.x = 0
-        # If Y Vector > 0.02 Then Apply Drag Else Set Y Vector to 0
-        if Y_Vec > 0.02:
-            self.position_vec.y *= self.drag
-        else:
-            self.position_vec.y = 0
+        self.position_vec.x += drag_force_x
+        self.position_vec.y += drag_force_y
 
     def _handle_x_collision(self,sprites:list[pyg.sprite.Sprite,]) -> list:
         x_collision = []
@@ -177,14 +169,36 @@ class player(pyg.sprite.Sprite):
 
     def _manager_collision(self):
         if self.Camera: # If Camera Group Has Defined
-            s = self.Camera.sprites()
-            x_col = self._handle_x_collision(s)
-            y_col = self._handle_y_collision(s)
+            sprites = self.Camera.sprites()
 
-            if len(x_col) > 0:
-                self._resolve_x_collision(x_col)
-            if len(y_col) > 0:
-                self._resolve_y_collision(y_col)
+            for sprite in sprites:
+                if sprite is not self.Camera.player:
+                    if self.rect.colliderect(sprite.rect):
+                        a = self.rect
+                        b = sprite.rect
+                        # if x_overlap > 0 then there is an overlap in the x-axis
+                        x_overlap = min(a.right, b.right) - max(a.x, b.x)
+                        # if y_overlap > 0 then there is an overlap in the y-axis
+                        y_overlap = min(a.bottom, b.bottom) - max(a.y, b.y)
+
+                        # overlapd in the x-axis
+                        if x_overlap < y_overlap:
+                            if a.x < b.x: # collision from right to left?
+                                a.x -= x_overlap                                
+                            else: # collision from left to right?
+                                a.x += x_overlap
+
+                            if self.position_vec.x > 0:
+                                self.position_vec.x = 0
+                        # overlapd in the y-axis
+                        else:
+                            if a.y < b.y: # collsion from bottom to top?
+                                a.y -= y_overlap
+                            else: # collision from top to bottom?
+                                a.y += y_overlap 
+                            
+                            if self.position_vec.y > 0:
+                                self.position_vec.y = 0
         else: # If Camera Group Has Not Defined
             if len(self.groups()) > 0: # If Player Has Groups
                 self.Camera = self.groups()[0] # Set Camera Group

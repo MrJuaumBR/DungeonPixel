@@ -21,7 +21,7 @@ class CameraGroup(pyg.sprite.Group):
         # Zoom
         self.zoom = 1
 
-        self.internal_surf_size = pme.screen.get_size()
+        self.internal_surf_size = GAME_MAP_SIZE
         self.internal_surf = pyg.Surface(self.internal_surf_size,pyg.SRCALPHA)
         self.internal_rect = self.internal_surf.get_rect(center=(self.half_w,self.half_w))
         self.internal_surf_size_vector = pyg.math.Vector2(self.internal_surf_size)
@@ -41,10 +41,19 @@ class CameraGroup(pyg.sprite.Group):
                 self.zoom = 1.55
         elif (pme.key_pressed(K_MINUS) or pme.key_pressed(K_o)) or (pme.key_pressed(K_KP_MINUS) or pme.key_pressed(K_PAGEDOWN)):
             self.zoom -= 0.05
-            if self.zoom < 0.95:
-                self.zoom = 0.95
+            if self.zoom < 0.8:
+                self.zoom = 0.8
         elif (pme.key_pressed(K_EQUALS) or pme.key_pressed(K_KP_EQUALS)):
             self.zoom = 1
+
+    def convert2offset(self, sprite:pyg.sprite.Sprite=None, pos:tuple[float, float]=None) -> pyg.math.Vector2:
+        if sprite is not None: # Sprite exists
+            return tuple(sprite.rect.topleft) - self.offset + self.internal_offset
+        elif pos is not None: # Position exists
+            return pos - self.offset + self.internal_offset
+        else:
+            print("[CameraGroup - c2off] You need to pass a sprite or a position")
+            return None
 
     def update(self):
         # Center the camera on the player
@@ -71,7 +80,7 @@ class CameraGroup(pyg.sprite.Group):
 
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.y+sprite.layer): # Order by Y + layer
             try:
-                offset_pos = tuple(sprite.rect.topleft) - self.offset + self.internal_offset
+                offset_pos = self.convert2offset(sprite)
                 self.internal_surf.blit(sprite.image, offset_pos)
                 sprite.offset_pos = offset_pos
             except Exception as e:

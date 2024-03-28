@@ -44,11 +44,11 @@ def game(save:Save):
     map_tiles = convert_map_code(map)
     map_size = get_map_size(map)
 
-    # Load Map
-    for y,line in enumerate(map_tiles):
-        for x,tile in enumerate(line):
-            if callable(tile):
-                Camera.add(tile(pos=((x+1)*32,(y+1)*32)))
+    # Load Map(Disabled)
+    # for y,line in enumerate(map_tiles):
+    #     for x,tile in enumerate(line):
+    #         if callable(tile):
+    #             Camera.add(tile(pos=((x+1)*32,(y+1)*32)))
 
     while run:
         for ev in pme.get_events():
@@ -57,9 +57,10 @@ def game(save:Save):
                 if ev.key == K_ESCAPE: run = False
 
         
-        map_last_write_time = map_hotload(map_last_write_time,map_path,Camera)
+        # map_last_write_time = map_hotload(map_last_write_time,map_path,Camera)
 
         ShowFPS()
+        player.draw_menu()
         Camera.update()
         pme.update()
         pme.screen.fill(COLOR_BLACK)

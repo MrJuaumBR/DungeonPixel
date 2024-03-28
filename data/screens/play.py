@@ -1,9 +1,6 @@
 from ..config import *
 from ..src.save import *
 
-def play():
-    pass
-
 def play_select_character():
     run = True
     SaveIndex = 0
@@ -94,6 +91,9 @@ def play_select_character():
             elif ev.type == KEYDOWN:
                 if ev.key == K_ESCAPE:
                     run = False
+            elif ev.type == MOUSEBUTTONUP:
+                if ev.button == 6:
+                    run = False
 
         ShowFPS()
         pme.update()
@@ -127,12 +127,14 @@ def create_save():
             s.plr.debug = DebugIndex or 0
             s.save()
             run = False
-
         for ev in pme.get_events():
             if ev.type == QUIT:
                 pme.quit()
             elif ev.type == KEYDOWN:
                 if ev.key == K_ESCAPE:
+                    run = False
+            elif ev.type == MOUSEBUTTONUP:
+                if ev.button == 6:
                     run = False
 
         ShowFPS()

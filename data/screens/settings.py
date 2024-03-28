@@ -36,6 +36,9 @@ def settings():
             elif ev.type == KEYDOWN:
                 if ev.key == K_ESCAPE:
                     run = False
+            elif ev.type == MOUSEBUTTONUP:
+                if ev.button == 6:
+                    run = False
         ShowFPS()
         pme.update()
         pme.screen.fill(COLOR_BLACK)

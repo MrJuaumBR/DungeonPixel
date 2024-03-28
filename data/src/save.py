@@ -2,7 +2,7 @@ from ..config import *
 
 # Game Player Sprite, Logic, and Load
 class player(pyg.sprite.Sprite):
-    saveable = ['name','rect','debug']
+    saveable = ['name','rect','debug', 'position_vec', 'health', 'maxhealth', 'defense', 'agility', 'strength', 'luck']
 
     name = 'Zord'
     layer = 2
@@ -22,9 +22,23 @@ class player(pyg.sprite.Sprite):
     max_speed: int = 5
     position_vec:pyg.math.Vector2 = pyg.math.Vector2()
 
+
+    sprinting:bool = False
+    sprint_time:int = 0
     debug:bool = False
+    dead:bool = False
 
     # Shown status
+    # Attributes
+    defense:int = 1
+    agility:int = 1
+    strength:int = 1
+    luck:int = 1
+
+    maxhealth:int = 100 + (defense*2)
+    health:int = maxhealth
+    max_speed:int = 5 + (agility*2)
+    
     def __init__(self, SaveClass,*groups) -> None:
         """
         Create the player handler, and Sprite for the game&nbsp;
@@ -36,14 +50,15 @@ class player(pyg.sprite.Sprite):
         super().__init__(*groups)
         self.SaveClass = SaveClass
         try:
-            self.Camera = self.groups()[0]
+            from .camera import CameraGroup as Camera_Type
+            self.Camera:Camera_Type = self.groups()[0]
         except Exception as e:
             print(f'[Save - Player - Init] {e}')
             pass
 
         self.size = (32,32)
 
-        self.rect = Rect(0,0,*self.size)
+        self.rect = Rect((GAME_MAP_SIZE[0]/2)-(self.size[0]/2),(GAME_MAP_SIZE[1]/2)-(self.size[1]/2),*self.size)
 
         self.image = pyg.Surface(self.size,pyg.SRCALPHA)
         self.image.fill((255,0,0,100))
@@ -74,7 +89,26 @@ class player(pyg.sprite.Sprite):
             self.position_vec.y -= self.speed
         elif Mov_Down:
             self.position_vec.y += self.speed
+        
+        # Others Keys
+        Sprinting = pme.key_pressed(K_LSHIFT) or pme.key_pressed(K_RSHIFT)
+
+        if Sprinting:
+            self.sprinting = True
+            self.sprint_time += 1
+        else:
+            self.sprinting = False
+            self.sprint_time = 0
+
+        self.sprint()
     
+    def sprint(self):
+        """Sprint Control, changes Max Speed"""
+        if self.sprinting and self.sprint_time > 3:
+            self.max_speed = round(self.max_speed * 1.8)
+        else:
+            self.max_speed = 5
+
     def _get_magnitude(self) -> float:
         """Same as player speed"""
         vector_x:float = self.position_vec.x
@@ -84,20 +118,21 @@ class player(pyg.sprite.Sprite):
         return magnitude
 
     def _manager_movment(self):
-        # Calculate the magnitude of the movement vector
-        magnitude = self._get_magnitude()
+        if not self.dead: # If the player is not dead
+            # Calculate the magnitude of the movement vector
+            magnitude = self._get_magnitude()
 
-        # limit the magnitude of the movement vector to the maximum speed
-        if magnitude >= self.max_speed:
-            scale_factor = self.max_speed / magnitude
-            self.position_vec.x *= scale_factor
-            self.position_vec.y *= scale_factor
+            # limit the magnitude of the movement vector to the maximum speed
+            if magnitude >= self.max_speed:
+                scale_factor = self.max_speed / magnitude
+                self.position_vec.x *= scale_factor
+                self.position_vec.y *= scale_factor
 
-        # Apply movement with or no the scale factor
-        if self.position_vec.x != 0:
-            self.rect.x += self.position_vec.x
-        if self.position_vec.y != 0:
-            self.rect.y += self.position_vec.y
+            # Apply movement with or no the scale factor
+            if self.position_vec.x != 0:
+                self.rect.x += self.position_vec.x
+            if self.position_vec.y != 0:
+                self.rect.y += self.position_vec.y
 
     def _manager_drag(self):
         # Get Vectors to only > 1
@@ -189,17 +224,63 @@ class player(pyg.sprite.Sprite):
             if len(self.groups()) > 0: # If Player Has Groups
                 self.Camera = self.groups()[0] # Set Camera Group
 
+    def _limit_player(self):
+        if self.rect.right >= GAME_MAP_SIZE[0]: # Right of Player >= Left of Screen
+            # Teleport to Left of Screen
+            self.teleport(x=0)
+        elif self.rect.left <= 0: # Left of Player <= Left of Screen
+            # Teleport to Right of Screen
+            self.teleport(x=GAME_MAP_SIZE[0]-self.rect.width)
+        
+        if self.rect.bottom >= GAME_MAP_SIZE[1]: # Bottom of Player >= Top of Screen
+            # Teleport to Top of Screen
+            self.teleport(y=0)
+        elif self.rect.top <= 0: # Top of Player <= Top of Screen
+            # Teleport to Bottom of Screen
+            self.teleport(y=GAME_MAP_SIZE[1]-self.rect.height)
+
+    def teleport(self, x:float=None, y:float=None, convert_offset:bool = False):
+        if convert_offset:
+            if x is not None:
+                self.offset_pos.x = x
+            if y is not None:
+                self.offset_pos.y = y
+        else:
+            if x is not None:
+                self.rect.x = x
+            if y is not None:
+                self.rect.y = y
+
+    def take_damage(self, damage:int):
+        if self.health > 0:
+            self.health -= damage
+            if self.health <= 0:
+                self.health = 0
+                self.dead = True
+
     def Isdebug(self):
         if self.debug:
+            m_pos = pme.mouse_pos()
             pme.draw_text(5*GAME_SCREEN_RATIO[0], 1*GAME_SCREEN_RATIO[1], 'DEBUG MODE', FONT_DOGICAPIXEL12, COLOR_WHITE)
             pme.draw_text(5*GAME_SCREEN_RATIO[0], 14*GAME_SCREEN_RATIO[1], f'Magnitude(Speed): {round(self._get_magnitude(),4)}', FONT_DOGICAPIXEL10, COLOR_WHITE)
-            pme.draw_text(5*GAME_SCREEN_RATIO[0], 26*GAME_SCREEN_RATIO[1], f'Position(Real): ({round(self.rect.x)}, {round(self.rect.y)})         Position(Offset): ({round(self.offset_pos.x)}, {round(self.offset_pos.y)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO[0], 26*GAME_SCREEN_RATIO[1], f'Position(Real): ({round(self.rect.x)}, {round(self.rect.y)}),         Position(Offset): ({round(self.offset_pos.x)}, {round(self.offset_pos.y)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO[0], 38*GAME_SCREEN_RATIO[1], f'Mouse Position: ({round(m_pos[0])}, {round(m_pos[1])}),         Mouse Buttons: ({pyg.mouse.get_pressed(5)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            # Requires Camera Setted
+            if self.Camera:
+                pme.draw_text(5*GAME_SCREEN_RATIO[0], 50*GAME_SCREEN_RATIO[1], f'Zoom: {self.Camera.zoom}', FONT_DOGICAPIXEL10, COLOR_WHITE) 
+                # Draw Barriers
+                # Top Barrier = Red
+                pme.draw_rect(*self.Camera.convert2offset(pos=(0,0)),color=COLOR_RED,size=(GAME_MAP_SIZE[0],32),surface=self.Camera.internal_surf)
+
+    def draw_menu(self):
+        pme.draw_rect(0,472*GAME_SCREEN_RATIO[1],(50,50,50,128),(256*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1]),border_width=3,border_color=(125,125,125,128))
 
     def update(self) -> None:
         self._manager_keyboard()
         self._manager_drag()
         self._manager_movment()
         self._manager_collision()
+        self._limit_player()
         self.Isdebug()
 
     def save(self) -> dict:

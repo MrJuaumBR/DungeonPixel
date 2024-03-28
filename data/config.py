@@ -57,6 +57,9 @@ GAME_SCREEN_RATIO = ScaleRatio(GAME_SCREEN_WIDTH,GAME_SCREEN_HEIGHT)
 
 GAME_CLOCK = pyg.time.Clock()
 
+GAME_MAP_SIZE = (4096,4096) # Width, Height in Pixels(Tile Size * 128)
+GAME_MAP_SIZE_IN_TILES = (GAME_MAP_SIZE[0]//32,GAME_MAP_SIZE[1]//32)
+
 # Paths
 PATH_DATA = './data/'
 PATH_ASSETS = './data/assets/'

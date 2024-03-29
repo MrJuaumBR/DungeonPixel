@@ -37,12 +37,12 @@ class CameraGroup(pyg.sprite.Group):
         # More Zoom
         if (pme.key_pressed(K_PLUS) or pme.key_pressed(K_i)) or (pme.key_pressed(K_KP_PLUS) or pme.key_pressed(K_PAGEUP)):
             self.zoom += 0.05
-            if self.zoom > 1.55:
-                self.zoom = 1.55
+            if self.zoom > GAME_CAMERA_MAX_ZOOM:
+                self.zoom = GAME_CAMERA_MAX_ZOOM
         elif (pme.key_pressed(K_MINUS) or pme.key_pressed(K_o)) or (pme.key_pressed(K_KP_MINUS) or pme.key_pressed(K_PAGEDOWN)):
             self.zoom -= 0.05
-            if self.zoom < 0.8:
-                self.zoom = 0.8
+            if self.zoom < GAME_CAMERA_MIN_ZOOM:
+                self.zoom = GAME_CAMERA_MIN_ZOOM
         elif (pme.key_pressed(K_EQUALS) or pme.key_pressed(K_KP_EQUALS)):
             self.zoom = 1
 
@@ -70,7 +70,7 @@ class CameraGroup(pyg.sprite.Group):
                 else:
                     sprite.update()
             except Exception as e:
-                print(e)
+                print(f'[Camera - Update] {e}')
 
     def draw(self):
 
@@ -84,7 +84,7 @@ class CameraGroup(pyg.sprite.Group):
                 self.internal_surf.blit(sprite.image, offset_pos)
                 sprite.offset_pos = offset_pos
             except Exception as e:
-                print(e)
+                print(f'[Camera - Draw] {e}')
 
 
          # Scale the internal surface based on the zoom scale

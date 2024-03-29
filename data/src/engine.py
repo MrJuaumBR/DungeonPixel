@@ -50,7 +50,7 @@ class Engine():
             print('[Engine] Scaled Fullscreen')
             flags = E_FULLSCREEN_SCALED
         
-        self.screen = pyg.display.set_mode((width, height), flags)
+        self.screen = pyg.display.set_mode((round(width), round(height)), flags)
         return self.screen
     
     def get_events(self) -> list[pyg.event.Event,]:
@@ -220,8 +220,8 @@ class Engine():
                 surf.blit(border, (x-(border_width//2), y-(border_width//2)))# Draw border
             
             surf.blit(rect, (x, y)) # Draw internal rect
-        returnF = lambda: rect if not HAS_ALPHA else rect.get_rect()
-        return returnF()
+        returnF = rect if not HAS_ALPHA else rect.get_rect()
+        return returnF
 
     def draw_circle(self, x:int, y:int, color:tuple[int,int,int], radius:int, surface:pyg.Surface=None) -> Rect: # type: ignore
         """
@@ -371,6 +371,49 @@ class Engine():
                     curPosX = MaxX
         
         return curPosX, percentage
+
+    def draw_bar(self, x:int, y:int, size:tuple[int,int], colors:list[tuple[int,int,int],],value:int, maxValue:int, surface:pyg.Surface=None, border_thickness:int=0, text_font:pyg.font.FontType=None,text:str=None) -> None:
+        """
+        Draw a bar tha move based on % of value passed
+        
+        Parameters:
+            x (int): The x pos
+            y (int): The y pos
+            size (tuple[int,int]): The size
+            colors (list[tuple[int,int,int]]): The colors (Have 3 Colors)
+            value (int): The value
+            maxValue (int): The max value
+            surface (pyg.Surface): The surface
+            border_thickness (int): The border thickness
+            text_font (pyg.font.FontType): The text font
+            text (str): The text
+        Returns:
+            None
+        """
+        HAS_BORDERS = False
+        HAS_TEXT = False
+        if border_thickness > 0 and len(colors) >= 3:
+            HAS_BORDERS = True
+        if text_font and text and len(str(text)) > 0 and len(colors) >= 4:
+            HAS_TEXT = True
+        text = str(text)
+        w,h = size
+        percentage = value/maxValue
+        if percentage < 0:
+            percentage = 0
+        if percentage > 1:
+            percentage = 1
+
+        # Draw Borders if have
+        bd_thick = round(border_thickness/2) if HAS_BORDERS else 0
+        if HAS_BORDERS:
+            # Draw background with borders
+            self.draw_rect(x,y,colors[0],(w+border_thickness,h+border_thickness),border_color=colors[2],surface=surface)
+        else:# Draw background without borders
+            self.draw_rect(x,y,colors[0],(w,h),surface=surface)
+        self.draw_rect(x+bd_thick,y+bd_thick,colors[1],(w*percentage,h),surface=surface)
+        if HAS_TEXT:
+            self.draw_text(x+bd_thick,y+bd_thick,text,text_font,colors[3],surface=surface)
 
     # Logic Functions
     def keys_pressed(self) -> pyg.key.ScancodeWrapper:

@@ -5,6 +5,7 @@ from data.screens.settings import *
 
 
 def main():
+    print('Game Started...')
     while True:
         # Game Title
         pme.draw_text(32*GAME_SCREEN_RATIO[0],32*GAME_SCREEN_RATIO[1],f'{GAME_TITLE}', FONT_ANDALIA52, COLOR_WHITE)

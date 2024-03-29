@@ -1,8 +1,18 @@
 from ..config import *
 
 # Game Player Sprite, Logic, and Load
+# Load Player Sprite
+p_s = spritesheet(PATH_TEXTURES+"player.png")
+Player_Sprite_Frames = {
+    'idle':[*p_s.images_at([(0,0,32,32),(32,0,32,32),(64,0,32,32)],colorkey=0)],
+    'walk':{
+        'x':[*p_s.images_at([(0,32,32,32),(32,32,32,32),(64,32,32,32)],colorkey=0)],
+        'y':[*p_s.images_at([(0,64,32,32),(32,64,32,32),(64,64,32,32)],colorkey=0)],
+    },
+}
+
 class player(pyg.sprite.Sprite):
-    saveable = ['name','rect','debug', 'position_vec', 'health', 'maxhealth', 'defense', 'agility', 'strength', 'luck']
+    saveable = ['name','rect','debug', 'position_vec', 'health', 'maxhealth', 'defense', 'agility', 'strength', 'luck', 'level', 'experience']
 
     name = 'Zord'
     layer = 2
@@ -21,11 +31,14 @@ class player(pyg.sprite.Sprite):
     drag:float = 0.65
     max_speed: int = 5
     position_vec:pyg.math.Vector2 = pyg.math.Vector2()
-
+    
+    state:str = 'idle'
+    animate_frame:float = 0
 
     sprinting:bool = False
     sprint_time:int = 0
     debug:bool = False
+    debug_tool_shown:bool = False
     dead:bool = False
 
     # Shown status
@@ -34,6 +47,8 @@ class player(pyg.sprite.Sprite):
     agility:int = 1
     strength:int = 1
     luck:int = 1
+    level:int = 1
+    experience:int = 0
 
     maxhealth:int = 100 + (defense*2)
     health:int = maxhealth
@@ -61,7 +76,7 @@ class player(pyg.sprite.Sprite):
         self.rect = Rect((GAME_MAP_SIZE[0]/2)-(self.size[0]/2),(GAME_MAP_SIZE[1]/2)-(self.size[1]/2),*self.size)
 
         self.image = pyg.Surface(self.size,pyg.SRCALPHA)
-        self.image.fill((255,0,0,100))
+        self.animate()
 
     def _manager_keyboard(self):
         # Mov Up
@@ -117,8 +132,30 @@ class player(pyg.sprite.Sprite):
         magnitude:float = (vector_x**2 + vector_y**2)**0.5
         return magnitude
 
+    def animate(self):
+        """Update player animation based on state and movement vectors."""
+        state, x, y = self.state, self.position_vec.x, self.position_vec.y
+        image_seq = Player_Sprite_Frames[state]
+
+        if state == 'idle':
+            image = image_seq[int(self.animate_frame)]
+        else:
+            image_keys = 'x' if abs(x) >= 0.15 else 'y'
+            image = image_seq[image_keys][int(self.animate_frame)]
+            if image_keys == 'x' and x < 0:
+                image = pyg.transform.flip(image, True, False)
+        self.image = pyg.transform.scale(image, self.size)
+
+        self.animate_frame = (self.animate_frame + 0.35) % (
+            len(image_seq) if state == 'idle' else len(image_seq[image_keys]))
+                
+
     def _manager_movment(self):
         if not self.dead: # If the player is not dead
+            if (self.position_vec.x != 0 or self.position_vec.y != 0) and (abs(self.position_vec.x) >= 0.15 or abs(self.position_vec.y) >= 0.15):
+                self.state = 'walk'
+            else:
+                self.state = 'idle'
             # Calculate the magnitude of the movement vector
             magnitude = self._get_magnitude()
 
@@ -133,6 +170,10 @@ class player(pyg.sprite.Sprite):
                 self.rect.x += self.position_vec.x
             if self.position_vec.y != 0:
                 self.rect.y += self.position_vec.y
+        else:
+            self.state = 'dead'
+
+        self.animate()
 
     def _manager_drag(self):
         # Get Vectors to only > 1
@@ -274,6 +315,10 @@ class player(pyg.sprite.Sprite):
 
     def draw_menu(self):
         pme.draw_rect(0,472*GAME_SCREEN_RATIO[1],(50,50,50,128),(256*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1]),border_width=3,border_color=(125,125,125,128))
+        pme.draw_bar(5*GAME_SCREEN_RATIO[0],480*GAME_SCREEN_RATIO[1], (248, 18), [(90, 80, 65), (150, 70, 70), (255,250,250), (255,255,255)], self.health, self.maxhealth,text_font=FONT_DOGICAPIXEL12, text=f'{round(self.health)}/{round(self.maxhealth)}({round(self.health/self.maxhealth*100)}%)', border_thickness=3)
+        pme.draw_text(5*GAME_SCREEN_RATIO[0], 502*GAME_SCREEN_RATIO[1], f'Level: {self.level}', FONT_DOGICAPIXEL12, COLOR_WHITE)
+        pme.draw_text(5*GAME_SCREEN_RATIO[0], 522*GAME_SCREEN_RATIO[1], f'Experience: {round(self.experience)}/{round(self.level*100)}({round(self.experience/(self.level*100)*100)}%)', FONT_DOGICAPIXEL12, COLOR_WHITE)
+        self.Isdebug()
 
     def update(self) -> None:
         self._manager_keyboard()
@@ -281,7 +326,6 @@ class player(pyg.sprite.Sprite):
         self._manager_movment()
         self._manager_collision()
         self._limit_player()
-        self.Isdebug()
 
     def save(self) -> dict:
         """

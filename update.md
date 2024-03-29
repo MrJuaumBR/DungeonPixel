@@ -7,3 +7,6 @@
 - Changed Zoom Distance;
 - Sprint System;
 - Stats System;
+- Menu Changes, Health & Level;
+- Character Sprite;
+- Loading Screen;

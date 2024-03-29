@@ -1,5 +1,6 @@
 from ..config import *
 from ..src.save import *
+from .loadscreen import loadscreen as loadingScr
 
 def play_select_character():
     run = True
@@ -72,7 +73,7 @@ def play_select_character():
                 save:Save = saves[SaveIndex_InList]
                 
                 from .game import game
-                game(save)
+                loadingScr(game,randint(360,600),save)
 
         for order,id, select, delete in Buttons:
             if select:

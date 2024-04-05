@@ -4,7 +4,7 @@ Imports
 
 from .src.engine import *
 from .src.auto_installer import AutoInstaller
-from .src.scale import *
+from .src.scale import Scale
 from random import randint, choice
 from math import sqrt
 print('[Config] Imported...')
@@ -29,7 +29,8 @@ CONFIG_DEFAULT = {
     'FPS': 0,
     'VOLUME':0.5,
     'SCREEN_SIZE':0,
-    'SHOW_FPS':False
+    'SHOW_FPS':False,
+    'FULLSCREEN':False
 }
 
 db_createTables() # Try to create Database Tables
@@ -52,15 +53,17 @@ GAME_FPS:int = GAME_FPS_LIST[CONFIG['FPS']]
 print(f'[Config] Loaded Data...')
 
 GAME_TITLE = "Dungeon Pixel"
-GAME_VERSION = '0.0.3'
+GAME_VERSION = '0.0.4'
 print('[Config] Metadata Loaded...')
 
+scale = Scale(GAME_FPS)
 GAME_SCREEN_WIDTH,GAME_SCREEN_HEIGHT = CFG_RES
-GAME_SCREEN_RATIO = ScaleRatio(GAME_SCREEN_WIDTH,GAME_SCREEN_HEIGHT)
-GAME_SCREEN_FLAGS = 0
+GAME_SCREEN_RATIO = scale.ScaleRatio(GAME_SCREEN_WIDTH,GAME_SCREEN_HEIGHT)
+GAME_SCREEN_FLAGS = SCALED|FULLSCREEN if CONFIG['FULLSCREEN'] else SCALED
 print('[Config] Screen Resources Loaded...')
 
 GAME_MAX_SAVES = 6
+GAME_PLAYER_ANIMATE_FRAME_SKIP = 0.35
 
 GAME_MAP_SIZE = (4096,4096) # Width, Height in Pixels(Tile Size * 128)
 GAME_MAP_SIZE_IN_TILES = (GAME_MAP_SIZE[0]//32,GAME_MAP_SIZE[1]//32)
@@ -96,13 +99,43 @@ PATH_FONT_DOGICAPIXEL = PATH_FONTS + 'dogicapixel.ttf'
 
 # Create Fonts
 pme.create_font('Arial', 24)
-FONT_ANDALIA52,_ = pme.create_font2(PATH_FONT_ANDALIA, int(52*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL18,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(18*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL28,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(28*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL22,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(22*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL36,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(36*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL12,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(12*GAME_SCREEN_RATIO[0]))
-FONT_DOGICAPIXEL10,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(10*GAME_SCREEN_RATIO[0]))
+FONT_ANDALIA52,_ = pme.create_font2(PATH_FONT_ANDALIA, int(52*GAME_SCREEN_RATIO))
+FONT_DOGICAPIXEL18,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(18*GAME_SCREEN_RATIO))
+FONT_DOGICAPIXEL28,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(28*GAME_SCREEN_RATIO))
+FONT_DOGICAPIXEL22,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(22*GAME_SCREEN_RATIO))
+FONT_DOGICAPIXEL36,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(36*GAME_SCREEN_RATIO))
+FONT_DOGICAPIXEL12,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(12*GAME_SCREEN_RATIO))
+FONT_DOGICAPIXEL10,_ = pme.create_font2(PATH_FONT_DOGICAPIXEL, int(10*GAME_SCREEN_RATIO))
+
+# Sounds Load
+
+# Rise 1 ~ 7
+SOUND_Rise01 = pyg.mixer.Sound(PATH_AUDIOS + 'Rise01.wav')
+SOUND_Rise02 = pyg.mixer.Sound(PATH_AUDIOS + 'Rise02.wav')
+SOUND_Rise03 = pyg.mixer.Sound(PATH_AUDIOS + 'Rise03.wav')
+SOUND_Rise04 = pyg.mixer.Sound(PATH_AUDIOS + 'Rise04.wav')
+SOUND_Rise05 = pyg.mixer.Sound(PATH_AUDIOS + 'Rise05.wav')
+SOUND_Rise06 = pyg.mixer.Sound(PATH_AUDIOS + 'Rise06.wav')
+SOUND_Rise07 = pyg.mixer.Sound(PATH_AUDIOS + 'Rise07.wav')
+# FX 1 ~ 2
+SOUND_FX01 = pyg.mixer.Sound(PATH_AUDIOS + 'FX01.wav')
+SOUND_FX02 = pyg.mixer.Sound(PATH_AUDIOS + 'FX02.wav')
+# Upper 1
+SOUND_Upper01 = pyg.mixer.Sound(PATH_AUDIOS + 'Upper01.wav')
+# Coin 1
+SOUND_Coin01 = pyg.mixer.Sound(PATH_AUDIOS + 'Coin01.wav')
+# Downer 1
+SOUND_Downer01 = pyg.mixer.Sound(PATH_AUDIOS + 'Downer01.wav')
+# Alarm
+SOUND_Alarm = pyg.mixer.Sound(PATH_AUDIOS + 'Alarm.wav')
+# Click 1
+SOUND_Click01 = pyg.mixer.Sound(PATH_AUDIOS + 'Click01.wav')
+# Switch 1
+SOUND_Switch01 = pyg.mixer.Sound(PATH_AUDIOS + 'Switch01.wav')
+
+# Set Engine Sound Button
+pme.button_click_sound= SOUND_Click01
+pme.switch_click_sound = SOUND_Switch01
 
 # Colors
 COLOR_WHITE = (255, 255, 255)
@@ -133,7 +166,7 @@ def ShowFPS():
         else:
             color = COLOR_RED
         
-        pme.draw_text(750*GAME_SCREEN_RATIO[0],10*GAME_SCREEN_RATIO[1],f'{C_FPS}', FONT_DOGICAPIXEL12, color)
+        pme.draw_text(750*GAME_SCREEN_RATIO,10*GAME_SCREEN_RATIO,f'{C_FPS}', FONT_DOGICAPIXEL12, color)
 """
 End of Config file
 """

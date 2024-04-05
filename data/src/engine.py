@@ -19,6 +19,8 @@ class Engine():
     slider_height = 10 # px
     select_click_delay = 100 # ms
     button_click_delay = 25 # ms
+    button_click_sound:pyg.mixer.SoundType = None
+    switch_click_sound:pyg.mixer.SoundType = None
 
     def __init__(self, screen:pyg.Surface=None):
         """
@@ -263,6 +265,8 @@ class Engine():
         if self.is_mouse_hover(re):
             if self.mouse_pressed(0):
                 pyg.time.delay(self.button_click_delay)
+                if self.button_click_sound:
+                    self.button_click_sound.play()
                 return True
             else:
                 return False
@@ -306,7 +310,21 @@ class Engine():
         return index
 
     def draw_checkbox(self,x:int,y:int,font:int or pyg.font.FontType,text:str,checked:bool,colors:list[tuple[int,int,int]],surface:pyg.Surface=None) -> bool: # type: ignore
+        """
+        Draw a checkbox and return checkbox state(bool)
+        * Count as switch
 
+        Parameters:
+            x (int): The x pos
+            y (int): The y pos
+            font (str): The font
+            text (str): The text
+            checked (bool): The checkbox state
+            colors (list[tuple[int,int,int]]): The color
+            surface (pyg.Surface): The surface
+        Returns:
+            bool: The checkbox state
+        """
         font:pyg.font.FontType = self._convert_font(font) # Convert font
         w,h = font.size(f'{text}') # Width & HEight
         bw = w//4
@@ -325,6 +343,8 @@ class Engine():
             if self.mouse_pressed(0):
                 checked = not checked
                 pyg.time.delay(self.select_click_delay)
+                if self.switch_click_sound:
+                    self.switch_click_sound.play()
 
         
 
@@ -496,7 +516,7 @@ class spritesheet():
             print(f'[Engine - Spritesheet - Error] {e}')
             self.active = False
 
-    def image_at(self, rectangle:tuple[int,int,int,int], colorkey=None) -> pyg.surface:
+    def image_at(self, rectangle:tuple[int,int,int,int], colorkey=None, xflip:bool=False, yflip:bool=False) -> pyg.surface:
         """
         Loads image from x,y,x+offset,y+offset
 
@@ -514,12 +534,14 @@ class spritesheet():
                 if colorkey == -1:
                     colorkey = image.get_at((0,0))
                 image.set_colorkey(colorkey,pyg.RLEACCEL)
+            if xflip or yflip:
+                image = pyg.transform.flip(image,xflip,yflip)
             return image
         else:
             print(f'[Engine - Spritesheet - Info] Spritesheet({self.path}) not active')
             return None
         
-    def images_at(self, rects:list[tuple[int,int,int,int]], colorkey=None) -> list[pyg.Surface,]:
+    def images_at(self, rects:list[tuple[int,int,int,int]], colorkey=None, xflip:bool=False, yflip:bool=False) -> list[pyg.Surface,]:
         """
         Loads multiple images, supply a list of coordinates
 
@@ -529,7 +551,7 @@ class spritesheet():
         Returns:
             list[pyg.surface]: The list of surfaces
         """
-        return [self.image_at(rect, colorkey) for rect in rects]
+        return [self.image_at(rect, colorkey, xflip, yflip) for rect in rects]
             
     
     def load_strip(self, rect:tuple[int,int,int,int], image_count:int, colorkey=None) -> list[pyg.Surface,]:

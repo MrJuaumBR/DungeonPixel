@@ -4,11 +4,22 @@ from ..config import *
 # Load Player Sprite
 p_s = spritesheet(PATH_TEXTURES+"player.png")
 Player_Sprite_Frames = {
-    'idle':[*p_s.images_at([(0,0,32,32),(32,0,32,32),(64,0,32,32)],colorkey=0)],
-    'walk':{
-        'x':[*p_s.images_at([(0,32,32,32),(32,32,32,32),(64,32,32,32)],colorkey=0)],
-        'y':[*p_s.images_at([(0,64,32,32),(32,64,32,32),(64,64,32,32)],colorkey=0)],
+    'idle':{
+        'up':[*p_s.images_at([(0,32,32,32),(32,32,32,32),(64,32,32,32)],colorkey=0)],
+        'down':[*p_s.images_at([(0,0,32,32),(32,0,32,32),(64,0,32,32)],colorkey=0)],
+        'left':[*p_s.images_at([(0,0,32,32),(32,0,32,32),(64,0,32,32)],colorkey=0,xflip=True)],
+        'right':[*p_s.images_at([(0,0,32,32),(32,0,32,32),(64,0,32,32)],colorkey=0)]
     },
+    'walk':{
+        'up':[*p_s.images_at([(0,96,32,32),(32,96,32,32),(64,96,32,32)],colorkey=0)],
+        'down':[*p_s.images_at([(0,128,32,32),(32,128,32,32),(64,128,32,32)],colorkey=0)],
+        'left':[*p_s.images_at([(0,64,32,32),(32,64,32,32),(64,64,32,32)],colorkey=0,xflip=True)],
+        'right':[*p_s.images_at([(0,64,32,32),(32,64,32,32),(64,64,32,32)],colorkey=0)]
+    }
+    # 'walk':{
+    #     'x':[*p_s.images_at([(0,32,32,32),(32,32,32,32),(64,32,32,32)],colorkey=0)],
+    #     'y':[*p_s.images_at([(0,64,32,32),(32,64,32,32),(64,64,32,32)],colorkey=0)],
+    # },
 }
 
 class player(pyg.sprite.Sprite):
@@ -33,6 +44,7 @@ class player(pyg.sprite.Sprite):
     position_vec:pyg.math.Vector2 = pyg.math.Vector2()
     
     state:str = 'idle'
+    facing:str = 'up'
     animate_frame:float = 0
 
     sprinting:bool = False
@@ -134,26 +146,29 @@ class player(pyg.sprite.Sprite):
 
     def animate(self):
         """Update player animation based on state and movement vectors."""
-        state, x, y = self.state, self.position_vec.x, self.position_vec.y
-        image_seq = Player_Sprite_Frames[state]
-
-        if state == 'idle':
-            image = image_seq[int(self.animate_frame)]
-        else:
-            image_keys = 'x' if abs(x) >= 0.15 else 'y'
-            image = image_seq[image_keys][int(self.animate_frame)]
-            if image_keys == 'x' and x < 0:
-                image = pyg.transform.flip(image, True, False)
-        self.image = pyg.transform.scale(image, self.size)
-
-        self.animate_frame = (self.animate_frame + 0.35) % (
-            len(image_seq) if state == 'idle' else len(image_seq[image_keys]))
+        try:
+            if self.Camera:
+                state, facing = self.state, self.facing
+                image_seq = Player_Sprite_Frames[state][facing]
+                self.animate_frame = (self.animate_frame + GAME_PLAYER_ANIMATE_FRAME_SKIP * self.Camera.zoom)
+                if self.animate_frame > len(image_seq):
+                    self.animate_frame = 0
+                self.image = pyg.transform.scale(image_seq[int(self.animate_frame)], self.size)
+        except Exception as e:
+            print(f'[Save - Player - Animate] {e}')
                 
-
     def _manager_movment(self):
         if not self.dead: # If the player is not dead
             if (self.position_vec.x != 0 or self.position_vec.y != 0) and (abs(self.position_vec.x) >= 0.15 or abs(self.position_vec.y) >= 0.15):
                 self.state = 'walk'
+                if self.position_vec.x > 0:
+                    self.facing = 'right'
+                elif self.position_vec.x < 0:
+                    self.facing = 'left'
+                elif self.position_vec.y < 0:
+                    self.facing = 'up'
+                elif self.position_vec.y > 0:
+                    self.facing = 'down'
             else:
                 self.state = 'idle'
             # Calculate the magnitude of the movement vector
@@ -172,8 +187,6 @@ class player(pyg.sprite.Sprite):
                 self.rect.y += self.position_vec.y
         else:
             self.state = 'dead'
-
-        self.animate()
 
     def _manager_drag(self):
         # Get Vectors to only > 1
@@ -302,22 +315,24 @@ class player(pyg.sprite.Sprite):
     def Isdebug(self):
         if self.debug:
             m_pos = pme.mouse_pos()
-            pme.draw_text(5*GAME_SCREEN_RATIO[0], 1*GAME_SCREEN_RATIO[1], 'DEBUG MODE', FONT_DOGICAPIXEL12, COLOR_WHITE)
-            pme.draw_text(5*GAME_SCREEN_RATIO[0], 14*GAME_SCREEN_RATIO[1], f'Magnitude(Speed): {round(self._get_magnitude(),4)}', FONT_DOGICAPIXEL10, COLOR_WHITE)
-            pme.draw_text(5*GAME_SCREEN_RATIO[0], 26*GAME_SCREEN_RATIO[1], f'Position(Real): ({round(self.rect.x)}, {round(self.rect.y)}),         Position(Offset): ({round(self.offset_pos.x)}, {round(self.offset_pos.y)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
-            pme.draw_text(5*GAME_SCREEN_RATIO[0], 38*GAME_SCREEN_RATIO[1], f'Mouse Position: ({round(m_pos[0])}, {round(m_pos[1])}),         Mouse Buttons: ({pyg.mouse.get_pressed(5)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO, 1*GAME_SCREEN_RATIO, 'DEBUG MODE', FONT_DOGICAPIXEL12, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO, 14*GAME_SCREEN_RATIO, f'Magnitude(Speed): {round(self._get_magnitude(),4)}', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO, 26*GAME_SCREEN_RATIO, f'Position(Real): ({round(self.rect.x)}, {round(self.rect.y)}),         Position(Offset): ({round(self.offset_pos.x)}, {round(self.offset_pos.y)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO, 38*GAME_SCREEN_RATIO, f'Mouse Position: ({round(m_pos[0])}, {round(m_pos[1])}),         Mouse Buttons: ({pyg.mouse.get_pressed(5)})', FONT_DOGICAPIXEL10, COLOR_WHITE)
+            pme.draw_text(5*GAME_SCREEN_RATIO, 62*GAME_SCREEN_RATIO, f'Animation State: {self.state}, Facing:{self.facing},         Animate Frame: {round(self.animate_frame,3)}', FONT_DOGICAPIXEL10, COLOR_WHITE)
             # Requires Camera Setted
             if self.Camera:
-                pme.draw_text(5*GAME_SCREEN_RATIO[0], 50*GAME_SCREEN_RATIO[1], f'Zoom: {self.Camera.zoom}', FONT_DOGICAPIXEL10, COLOR_WHITE) 
+                pme.draw_text(5*GAME_SCREEN_RATIO, 50*GAME_SCREEN_RATIO, f'Zoom: {self.Camera.zoom}', FONT_DOGICAPIXEL10, COLOR_WHITE) 
                 # Draw Barriers
                 # Top Barrier = Red
                 pme.draw_rect(*self.Camera.convert2offset(pos=(0,0)),color=COLOR_RED,size=(GAME_MAP_SIZE[0],32),surface=self.Camera.internal_surf)
+            
 
     def draw_menu(self):
-        pme.draw_rect(0,472*GAME_SCREEN_RATIO[1],(50,50,50,128),(256*GAME_SCREEN_RATIO[0],128*GAME_SCREEN_RATIO[1]),border_width=3,border_color=(125,125,125,128))
-        pme.draw_bar(5*GAME_SCREEN_RATIO[0],480*GAME_SCREEN_RATIO[1], (248, 18), [(90, 80, 65), (150, 70, 70), (255,250,250), (255,255,255)], self.health, self.maxhealth,text_font=FONT_DOGICAPIXEL12, text=f'{round(self.health)}/{round(self.maxhealth)}({round(self.health/self.maxhealth*100)}%)', border_thickness=3)
-        pme.draw_text(5*GAME_SCREEN_RATIO[0], 502*GAME_SCREEN_RATIO[1], f'Level: {self.level}', FONT_DOGICAPIXEL12, COLOR_WHITE)
-        pme.draw_text(5*GAME_SCREEN_RATIO[0], 522*GAME_SCREEN_RATIO[1], f'Experience: {round(self.experience)}/{round(self.level*100)}({round(self.experience/(self.level*100)*100)}%)', FONT_DOGICAPIXEL12, COLOR_WHITE)
+        pme.draw_rect(0,472*GAME_SCREEN_RATIO,(50,50,50,128),(256*GAME_SCREEN_RATIO,128*GAME_SCREEN_RATIO),border_width=3,border_color=(125,125,125,128))
+        pme.draw_bar(5*GAME_SCREEN_RATIO,480*GAME_SCREEN_RATIO, (248*GAME_SCREEN_RATIO, 18*GAME_SCREEN_RATIO), [(90, 80, 65), (150, 70, 70), (255,250,250), (255,255,255)], self.health, self.maxhealth,text_font=FONT_DOGICAPIXEL12, text=f'{round(self.health)}/{round(self.maxhealth)}({round(self.health/self.maxhealth*100)}%)', border_thickness=3)
+        pme.draw_text(5*GAME_SCREEN_RATIO, 502*GAME_SCREEN_RATIO, f'Level: {self.level}', FONT_DOGICAPIXEL12, COLOR_WHITE)
+        pme.draw_text(5*GAME_SCREEN_RATIO, 522*GAME_SCREEN_RATIO, f'Experience: {round(self.experience)}/{round(self.level*100)}({round(self.experience/(self.level*100)*100)}%)', FONT_DOGICAPIXEL12, COLOR_WHITE)
         self.Isdebug()
 
     def update(self) -> None:
@@ -326,6 +341,7 @@ class player(pyg.sprite.Sprite):
         self._manager_movment()
         self._manager_collision()
         self._limit_player()
+        self.animate()
 
     def save(self) -> dict:
         """

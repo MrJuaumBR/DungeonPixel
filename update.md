@@ -1,12 +1,19 @@
 # Update
 
-- Added Button 7 of mouse support(Back);
-- Debug Texts a bit changed;
-- Remove Map Support;
+## 0.0.4
+- Player Animation Fix;
+- Load Time Fix;
+- Down Animation(Player);
+- Debug Small Changes;
+- Load Screen Changes;
+- Settings Message for Resolution Modified;
+- Some sounds added.
+
+## 0.0.3
+- Added Button 5 of mouse support(Back);
 - Limits Suriving Borders;
 - Changed Zoom Distance;
-- Sprint System;
 - Stats System;
 - Menu Changes, Health & Level;
 - Character Sprite;
-- Loading Screen;
+- Loading Screen.
